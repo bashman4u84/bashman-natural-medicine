@@ -43,7 +43,7 @@ function rindField() {
 
 /* interior flesh dome the arils sit on */
 function fleshField() {
-  const dome = (q) => op.at(q, SDF.sphere(0.72), { ty: -0.42 })
+  const dome = (q) => op.at(q, SDF.sphere(0.6), { ty: -0.24 })
   return (p) => {
     const n = fieldNoise(103, 0.012, 2.6)(p)
     return dome(p) + n
@@ -55,16 +55,16 @@ const _v = new THREE.Vector3()
 export function initHero(canvas, _opts = {}) {
   const fx = new URLSearchParams(location.search).get('fx') || 'full'
   const S = (flag) => fx === 'full' || fx === flag
-  const stage = initStage(canvas, { fov: 42, camPos: [0, 0.12, 4.7], shadows: false, exposure: 0.98 })
+  const stage = initStage(canvas, { fov: 42, camPos: [0, 0.1, 5.4], shadows: false, exposure: 0.98 })
   const { scene, camera } = stage
   studioLights(scene)
 
   /* ---------- pomegranate ---------- */
   const tex = pomegranateTextures()
   const rindMat = new THREE.MeshPhysicalMaterial({
-    map: tex.map, bumpMap: tex.bump, bumpScale: 0.5,
-    color: '#ffffff', roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.5,
-    sheen: 0.35, sheenColor: new THREE.Color('#ffb0a0'), envMapIntensity: 0.9
+    map: tex.map, bumpMap: tex.bump, bumpScale: 0.35,
+    color: '#ffd9d5', roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.62,
+    sheen: 0.18, sheenColor: new THREE.Color('#ff8a7a'), envMapIntensity: 0.75
   })
   const rind = new THREE.Mesh(sculptField((x, y, z) => rindField()([x, y, z]), { min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: IS_TOUCH ? 84 : 104 }), rindMat)
   // widen UV fold (box projection scale) — keep default; scale object instead
@@ -120,8 +120,8 @@ export function initHero(canvas, _opts = {}) {
   const cutAxis = new THREE.Vector3(0, Math.cos(0.75), Math.sin(0.75)).normalize() // opening normal
   const right = new THREE.Vector3(1, 0, 0)
   const up = new THREE.Vector3().crossVectors(cutAxis, right).normalize()
-  const domeR = 0.72
-  const domeCY = -0.42
+  const domeR = 0.6
+  const domeCY = -0.24
   const domeC = new THREE.Vector3(0, domeCY, 0)
   let seedI = 0
   const rand = () => {
@@ -131,7 +131,7 @@ export function initHero(canvas, _opts = {}) {
   for (let i = 0; i < 74; i++) {
     // arils hug the exposed dome cap, angled toward the opening
     const a = rand() * Math.PI * 2
-    const capAng = Math.acos(1 - rand() * 0.66) // up to ~62° off the opening axis
+    const capAng = Math.acos(1 - rand() * 0.55) // up to ~55° off the opening axis
     const dir = cutAxis
       .clone()
       .multiplyScalar(Math.cos(capAng))
@@ -206,7 +206,7 @@ export function initHero(canvas, _opts = {}) {
 
   /* dedicated front key: the studio key rakes from above-right and
    * leaves the camera-facing flank dark — this lifts the fruit's face */
-  const frontKey = new THREE.DirectionalLight('#ffe6bd', 1.5)
+  const frontKey = new THREE.DirectionalLight('#ffdcae', 1.1)
   frontKey.position.set(-1.6, 1.4, 3.4)
   scene.add(frontKey)
 
@@ -217,8 +217,8 @@ export function initHero(canvas, _opts = {}) {
   /* ---------- float animation ---------- */
   const pivot = new THREE.Group()
   pivot.add(rind, flesh, arils, crown, glowSprite(glowTexture('rgba(255,150,90,0.8)'), 0.5, 1.1))
-  pivot.scale.setScalar(1.32)
-  pivot.position.y = -0.1
+  pivot.scale.setScalar(1.12)
+  pivot.position.y = -0.06
   scene.add(pivot)
 
   let scrollP = 0
