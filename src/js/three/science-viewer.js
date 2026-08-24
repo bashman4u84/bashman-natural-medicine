@@ -9,6 +9,13 @@ export function initScienceViewer(canvas, hotspotLayer) {
   const { scene, camera, renderer } = stage
   studioLights(scene, { shadows: true })
   addGroundShadow(scene, -1.55)
+  /* softbox-like fill so the flesh catches a broad gradient */
+  const fill = new THREE.PointLight('#ffdcb4', 9, 16, 2)
+  fill.position.set(-2.2, 0.6, 2.8)
+  scene.add(fill)
+  const cool = new THREE.PointLight('#9fd2ff', 4, 14, 2)
+  cool.position.set(2.6, -0.4, -2.2)
+  scene.add(cool)
 
   const controls = new OrbitControls(camera, canvas)
   controls.enableDamping = true

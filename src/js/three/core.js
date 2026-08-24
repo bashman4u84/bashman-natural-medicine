@@ -1,8 +1,37 @@
 import * as THREE from 'three'
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
 
 export const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches
 export const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/* ---------- bespoke studio environment ----------
+ * RoomEnvironment reads "offices"; organs read much better against a
+ * dark void with two soft studio sources — warm key, cool fill — like
+ * a porcelain/medical render. Built once per renderer.
+ */
+let _envTex = null
+export function studioEnvironment(renderer) {
+  if (_envTex) return _envTex
+  const scene = new THREE.Scene()
+  scene.background = new THREE.Color(0x050809)
+  const mk = (color, w, h, pos, rot) => {
+    const m = new THREE.Mesh(
+      new THREE.PlaneGeometry(w, h),
+      new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide })
+    )
+    m.position.set(...pos)
+    m.rotation.set(...rot)
+    scene.add(m)
+  }
+  mk(0xffffff, 5, 2.6, [2.4, 2.6, 2.6], [0, -0.72, -0.55]) // warm key
+  mk(0x9fd2ff, 4.4, 2.2, [-3.2, 1.4, -1.8], [0, 1.05, 0.6]) // cool fill
+  mk(0xffd9a8, 2.2, 1.6, [0, -2.6, 1.2], [Math.PI / 2, 0, 0]) // bounce
+  mk(0x143b2a, 8, 4, [0, 1.6, -4.4], [0.35, 0, 0]) // deep green backdrop
+  mk(0x10241b, 9, 5, [0, -1.5, 3.2], [-0.3, 0, 0]) // floor haze
+  const pmrem = new THREE.PMREMGenerator(renderer)
+  _envTex = pmrem.fromScene(scene, 0.035).texture
+  pmrem.dispose()
+  return _envTex
+}
 
 export function initStage(canvas, opts = {}) {
   const {
@@ -30,8 +59,7 @@ export function initStage(canvas, opts = {}) {
   const scene = new THREE.Scene()
   if (!alpha) scene.background = new THREE.Color('#0b1f16')
 
-  const pmrem = new THREE.PMREMGenerator(renderer)
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.035).texture
+  scene.environment = studioEnvironment(renderer)
 
   const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 60)
   camera.position.set(...camPos)
@@ -95,7 +123,7 @@ export function initStage(canvas, opts = {}) {
 }
 
 export function studioLights(scene, { shadows = false } = {}) {
-  const key = new THREE.DirectionalLight(0xfff2da, 2.4)
+  const key = new THREE.DirectionalLight(0xfff2da, 2.9)
   key.position.set(2.6, 3.6, 2.4)
   if (shadows) {
     key.castShadow = true

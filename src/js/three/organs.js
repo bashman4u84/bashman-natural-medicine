@@ -1,9 +1,31 @@
 import * as THREE from 'three'
 import { loadGeometry } from './models.js'
-import {
-  liverTextures, stomachTextures, kidneyTextures, heartTextures,
-  pancreasTextures, intestineTextures, organMaterial
-} from './tissues.js'
+import { organTextures, organMaterial } from './tissues.js'
+import { IS_TOUCH } from './core.js'
+
+/* flesh recipe: wet, translucent, glistening — transmission gives
+ * the subsurface "fresh organ" look on desktop; touch devices get
+ * the same gloss without the transmission pass. */
+const SSS = !IS_TOUCH
+const FLESH = {
+  liver: { bumpScale: 0.55, roughness: 0.6, clearcoat: 0.62, clearcoatRoughness: 0.14, sheen: 0.8, sheenColor: '#ff8a6e', envMapIntensity: 1.15, transmission: 0.18, thickness: 2.6, attenuationColor: '#7a2410', attenuationDistance: 0.85 },
+  stomach: { bumpScale: 0.62, roughness: 0.62, clearcoat: 0.55, clearcoatRoughness: 0.18, sheen: 0.72, sheenColor: '#ffb59c', envMapIntensity: 1.05, transmission: 0.2, thickness: 2.2, attenuationColor: '#a8402a', attenuationDistance: 0.7 },
+  kidneys: { bumpScale: 0.5, roughness: 0.62, clearcoat: 0.6, clearcoatRoughness: 0.16, sheen: 0.68, sheenColor: '#ffa48a', envMapIntensity: 1.1, transmission: 0.12, thickness: 1.8, attenuationColor: '#7d2f1a', attenuationDistance: 0.8 },
+  heart: { bumpScale: 0.45, roughness: 0.58, clearcoat: 0.65, clearcoatRoughness: 0.12, sheen: 0.75, sheenColor: '#ff9a8e', envMapIntensity: 1.2, transmission: 0.14, thickness: 2.4, attenuationColor: '#8a1a12', attenuationDistance: 0.75 },
+  pancreas: { bumpScale: 0.7, roughness: 0.66, clearcoat: 0.35, clearcoatRoughness: 0.3, sheen: 0.5, sheenColor: '#ffdfa8', envMapIntensity: 0.95, transmission: 0.06, thickness: 1.4, attenuationColor: '#c9924f', attenuationDistance: 0.6 },
+  intestines: { bumpScale: 0.6, roughness: 0.6, clearcoat: 0.55, clearcoatRoughness: 0.18, sheen: 0.7, sheenColor: '#ffd2b8', envMapIntensity: 1.05, transmission: 0.16, thickness: 2.0, attenuationColor: '#a4603a', attenuationDistance: 0.8 }
+}
+function fleshMat(key, t) {
+  const cfg = FLESH[key]
+  return organMaterial({
+    map: t.map, bump: t.bump, roughnessMap: t.roughness,
+    bumpScale: cfg.bumpScale, roughness: cfg.roughness,
+    clearcoat: cfg.clearcoat, clearcoatRoughness: cfg.clearcoatRoughness,
+    sheen: cfg.sheen, sheenColor: cfg.sheenColor, envMapIntensity: cfg.envMapIntensity,
+    transmission: SSS ? cfg.transmission : 0,
+    thickness: cfg.thickness, attenuationColor: cfg.attenuationColor, attenuationDistance: cfg.attenuationDistance
+  })
+}
 
 /* ============================================================
  * organs.js — the fine organ models. Geometry is baked at build
@@ -29,12 +51,8 @@ function vesselMat(color) {
 
 async function buildLiver() {
   const group = new THREE.Group()
-  const t = liverTextures()
-  const mat = organMaterial({
-    map: t.map, bump: t.bump, bumpScale: 0.6,
-    roughness: 0.4, clearcoat: 0.42, clearcoatRoughness: 0.5,
-    sheen: 0.5, sheenColor: '#ff9a80', envMapIntensity: 0.9
-  })
+  const t = organTextures('liver')
+  const mat = fleshMat('liver', t)
   const mesh = new THREE.Mesh(await loadGeometry('liver'), mat)
   mesh.castShadow = true
   group.add(mesh)
@@ -58,18 +76,34 @@ async function buildLiver() {
     new THREE.MeshStandardMaterial({ color: '#7fae6a', roughness: 0.5 })
   )
   group.add(duct)
+
+  /* hepatic veins rising from the diaphragmatic surface */
+  const hvMat = new THREE.MeshPhysicalMaterial({ color: '#6e3a5e', roughness: 0.32, clearcoat: 0.4 })
+  const hepatVein = (pts, r) =>
+    new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), 24, r, 8), hvMat)
+  group.add(
+    hepatVein([[0.32, 0.4, -0.05], [0.3, 0.68, -0.08], [0.26, 0.82, -0.1]], 0.035),
+    hepatVein([[0.06, 0.34, 0.18], [0.02, 0.6, 0.16], [-0.02, 0.76, 0.12]], 0.028),
+    hepatVein([[-0.2, 0.3, -0.1], [-0.24, 0.56, -0.12], [-0.28, 0.7, -0.14]], 0.026)
+  )
+  /* portal triad at the porta hepatis */
+  const portalMat = new THREE.MeshPhysicalMaterial({ color: '#8e5a3a', roughness: 0.4 })
+  const bileMat = new THREE.MeshPhysicalMaterial({ color: '#5f8f4c', roughness: 0.45 })
+  const triad = new THREE.Mesh(new THREE.CapsuleGeometry(0.042, 0.14, 6, 10), portalMat)
+  triad.position.set(0.06, -0.34, 0.24)
+  triad.rotation.z = -0.5
+  const bileDuct = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.16, 6, 10), bileMat)
+  bileDuct.position.set(-0.02, -0.36, 0.3)
+  bileDuct.rotation.z = 0.35
+  group.add(triad, bileDuct)
   group.rotation.set(-0.06, 0.35, 0.05)
   return group
 }
 
 async function buildStomach() {
   const group = new THREE.Group()
-  const t = stomachTextures()
-  const mat = organMaterial({
-    map: t.map, bump: t.bump, bumpScale: 0.7,
-    roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.45,
-    sheen: 0.6, sheenColor: '#ffb59c', envMapIntensity: 0.9
-  })
+  const t = organTextures('stomach')
+  const mat = fleshMat('stomach', t)
   const mesh = new THREE.Mesh(await loadGeometry('stomach'), mat)
   mesh.castShadow = true
   group.add(mesh)
@@ -91,12 +125,8 @@ async function buildStomach() {
 
 async function buildKidneys() {
   const group = new THREE.Group()
-  const t = kidneyTextures()
-  const mat = organMaterial({
-    map: t.map, bump: t.bump, bumpScale: 0.55,
-    roughness: 0.4, clearcoat: 0.45, clearcoatRoughness: 0.5,
-    sheen: 0.5, sheenColor: '#ffa48a', envMapIntensity: 0.95
-  })
+  const t = organTextures('kidneys')
+  const mat = fleshMat('kidneys', t)
   const mesh = new THREE.Mesh(await loadGeometry('kidneys'), mat)
   mesh.castShadow = true
   group.add(mesh)
@@ -110,6 +140,14 @@ async function buildKidneys() {
     group.add(adr)
   })
 
+  /* renal pelvis bulges at each hilum */
+  const pelvisMat = new THREE.MeshPhysicalMaterial({ color: '#b98a5e', roughness: 0.38, clearcoat: 0.3 })
+  ;[-1, 1].forEach((s) => {
+    const pelvis = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), pelvisMat)
+    pelvis.scale.set(0.1, 0.16, 0.12)
+    pelvis.position.set(s * 0.32, 0.0, 0.04)
+    group.add(pelvis)
+  })
   const ureterMat = new THREE.MeshStandardMaterial({ color: '#c9a06c', roughness: 0.5 })
   ;[-1, 1].forEach((s) => {
     const curve = new THREE.CatmullRomCurve3([
@@ -144,12 +182,8 @@ async function buildKidneys() {
 
 async function buildHeart() {
   const group = new THREE.Group()
-  const t = heartTextures()
-  const mat = organMaterial({
-    map: t.map, bump: t.bump, bumpScale: 0.5,
-    roughness: 0.38, clearcoat: 0.48, clearcoatRoughness: 0.45,
-    sheen: 0.55, sheenColor: '#ff9a8e', envMapIntensity: 0.9
-  })
+  const t = organTextures('heart')
+  const mat = fleshMat('heart', t)
   const body = new THREE.Mesh(await loadGeometry('heart'), mat)
   body.castShadow = true
   group.add(body)
@@ -192,6 +226,20 @@ async function buildHeart() {
   capC.position.set(0.33, 1.02, -0.08)
   group.add(aorta, pulm, cav, capA, capP, capC)
 
+  /* coronary arteries — the heart's own blood supply */
+  const corMat = new THREE.MeshPhysicalMaterial({
+    color: '#b02826', roughness: 0.3, clearcoat: 0.45, clearcoatRoughness: 0.3,
+    sheen: 0.4, sheenColor: '#ffb9a8'
+  })
+  const coronary = (pts, r = 0.028) =>
+    new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), 36, r, 8), corMat)
+  // left main → LAD down the interventricular groove
+  group.add(coronary([[0.06, 0.5, 0.16], [0.0, 0.32, 0.4], [-0.02, 0.05, 0.46], [-0.12, -0.3, 0.4], [-0.24, -0.55, 0.26]], 0.03))
+  // circumflex around the left AV groove
+  group.add(coronary([[-0.02, 0.32, 0.4], [-0.28, 0.34, 0.32], [-0.44, 0.28, 0.1], [-0.5, 0.1, -0.05]], 0.024))
+  // right coronary along the right AV groove to the apex
+  group.add(coronary([[0.14, 0.48, 0.18], [0.34, 0.3, 0.34], [0.34, 0.02, 0.42], [0.18, -0.28, 0.38], [0.02, -0.48, 0.3]], 0.028))
+
   group.userData.tick = (t) => {
     const beat = 1 + Math.sin(t * 2.6) * 0.011 + Math.max(0, Math.sin(t * 2.6 - 0.55)) * 0.02
     body.scale.setScalar(beat)
@@ -203,12 +251,8 @@ async function buildHeart() {
 
 async function buildPancreas() {
   const group = new THREE.Group()
-  const t = pancreasTextures()
-  const mat = organMaterial({
-    map: t.map, bump: t.bump, bumpScale: 0.8,
-    roughness: 0.5, clearcoat: 0.25, clearcoatRoughness: 0.5,
-    sheen: 0.4, sheenColor: '#ffdfa8', envMapIntensity: 0.85
-  })
+  const t = organTextures('pancreas')
+  const mat = fleshMat('pancreas', t)
   const mesh = new THREE.Mesh(await loadGeometry('pancreas'), mat)
   mesh.castShadow = true
   group.add(mesh)
@@ -218,12 +262,8 @@ async function buildPancreas() {
 
 async function buildIntestines() {
   const group = new THREE.Group()
-  const t = intestineTextures()
-  const mat = organMaterial({
-    map: t.map, bump: t.bump, bumpScale: 0.65,
-    roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.5,
-    sheen: 0.55, sheenColor: '#ffd2b8', envMapIntensity: 0.9
-  })
+  const t = organTextures('intestines')
+  const mat = fleshMat('intestines', t)
   const mesh = new THREE.Mesh(await loadGeometry('intestines'), mat)
   mesh.castShadow = true
   group.add(mesh)
