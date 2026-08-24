@@ -104,7 +104,7 @@ export const RECIPES = {
   },
 
   pomegranate: {
-    palette: { base: [0.52, 0.055, 0.1], dark: [0.34, 0.025, 0.06], light: [0.66, 0.13, 0.16], grain: 0.3, speckle: 0.12 },
+    palette: { base: [0.44, 0.038, 0.075], dark: [0.28, 0.018, 0.045], light: [0.56, 0.09, 0.12], grain: 0.3, speckle: 0.12 },
     color(u, v, l, m, c2) {
       let col = mix(this.palette.base, this.palette.dark, Math.max(0, l) * 0.6 + Math.max(0, m) * 0.25)
       col = mix(col, this.palette.light, Math.max(0, -l) * 0.45)

@@ -62,9 +62,9 @@ export function initHero(canvas, _opts = {}) {
   /* ---------- pomegranate ---------- */
   const tex = pomegranateTextures()
   const rindMat = new THREE.MeshPhysicalMaterial({
-    map: tex.map, bumpMap: tex.bump, bumpScale: 0.35,
-    color: '#ffd9d5', roughness: 0.42, clearcoat: 0.4, clearcoatRoughness: 0.62,
-    sheen: 0.18, sheenColor: new THREE.Color('#ff8a7a'), envMapIntensity: 0.75
+    map: tex.map, bumpMap: tex.bump, bumpScale: 0.3,
+    color: '#ffffff', roughness: 0.5, clearcoat: 0.28, clearcoatRoughness: 0.7,
+    sheen: 0.15, sheenColor: new THREE.Color('#ff8a7a'), envMapIntensity: 0.7
   })
   const rind = new THREE.Mesh(sculptField((x, y, z) => rindField()([x, y, z]), { min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: IS_TOUCH ? 84 : 104 }), rindMat)
   // widen UV fold (box projection scale) — keep default; scale object instead
