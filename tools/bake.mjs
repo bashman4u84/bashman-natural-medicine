@@ -87,8 +87,11 @@ for (const [key, def] of Object.entries(ORGAN_FIELDS)) {
 
 /* ---------- pomegranate (hero star) ---------- */
 const POM_PARTS = { rind: INGREDIENT_PARTS.pomegranate.find((p) => p.part === 'rind'), flesh: INGREDIENT_PARTS.pomegranate.find((p) => p.part === 'flesh') }
-const pomRind = bakeField(POM_PARTS.rind.field, {
-  min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: POM_PARTS.rind.res
+/* rind is baked as RAW geometry first: the calyx crown must merge in
+ * BEFORE quantization (merging quantized data re-interprets int16 as
+ * float32 → garbage vertices) */
+const pomRindGeoRaw = sculptField((x, y, z) => POM_PARTS.rind.field()([x, y, z]), {
+  min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: POM_PARTS.rind.res, iso: 0.012
 })
 // bake the calyx crown (6 sepals) into the rind buffer
 const crownGeos = []
@@ -109,13 +112,8 @@ for (let i = 0; i < 6; i++) {
 }
 let crownMerged = mergeGeometries(crownGeos)
 crownMerged.translate(0, 0, 0)
-// crown + rind in one buffer
-const rindGeo = new THREE.BufferGeometry()
-rindGeo.setAttribute('position', new THREE.BufferAttribute(recover(pomRind.positions), 3))
-rindGeo.setAttribute('normal', new THREE.BufferAttribute(recover(pomRind.normals), 3))
-rindGeo.setAttribute('uv', new THREE.BufferAttribute(recover(pomRind.uvs), 2))
-rindGeo.setIndex(new THREE.BufferAttribute(recoverI(pomRind.indices), 1))
-const rindAll = mergeGeometries([rindGeo, crownMerged], false)
+// crown + rind in one buffer (raw geometries, then quantize once)
+const rindAll = mergeGeometries([pomRindGeoRaw, crownMerged], false)
 writeModule('pomegranate', {
   rind: geomToData(rindAll),
   flesh: bakeField(POM_PARTS.flesh.field, {
@@ -124,15 +122,6 @@ writeModule('pomegranate', {
   arils: bakeArils()
 })
 manifest.pomegranate = { parts: ['rind', 'flesh', 'arils'], size: 3 }
-
-function recover(s) {
-  const bin = Buffer.from(s, 'base64')
-  return new Float32Array(bin.buffer, bin.byteOffset, bin.byteLength / 4)
-}
-function recoverI(s) {
-  const bin = Buffer.from(s, 'base64')
-  return new Uint32Array(bin.buffer, bin.byteOffset, bin.byteLength / 4)
-}
 
 /* arils: merged rubies hugging the flesh dome */
 function bakeArils() {
