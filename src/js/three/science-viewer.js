@@ -155,5 +155,12 @@ export function initScienceViewer(canvas, hotspotLayer) {
     projectHotspots()
   })
 
+  window.__sciDebug = () => ({
+    cam: camera.position.toArray().map((v) => +v.toFixed(2)),
+    tgt: controls.target.toArray().map((v) => +v.toFixed(2)),
+    organWorld: current
+      ? (() => { const s = new THREE.Vector3(); current.getWorldScale(s); return { scale: +s.x.toFixed(3) } })()
+      : null
+  })
   return { setOrgan, setHotspots, zoom, get renderer() { return renderer } }
 }

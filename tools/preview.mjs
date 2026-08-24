@@ -61,7 +61,24 @@ function organic(seed, amp, freq) {
   return (p) => fbm(n, p[0] * freq + 0.5, p[1] * freq + 0.5, p[2] * freq + 0.5, 2) * amp
 }
 
+/* pomegranate — mirror of hero.js fields */
+const pomRind = (p) => {
+  const cutShape = (q) => op.at(q, SDF.roundBox([0.62, 0.55, 0.5], 0.03), { tx: 0.0, ty: 0.5, tz: 0.8, rx: -0.75 })
+  const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
+  const tipShape = (q) => op.at(q, SDF.sphere(0.3), { ty: 1.02 })
+  const noise = organic(101, 0.02, 2.2)
+  let d = SDF.ellipsoid([0.98, 0.92, 0.92])(p) + noise(p)
+  d = op.smoothUnion(d, tipShape(p), 0.2)
+  d = op.smoothSubtract(d, innerShape(p), 0.02)
+  d = op.subtract(d, cutShape(p))
+  return d
+}
+const pomFlesh = (p) => {
+  const dome = (q) => op.at(q, SDF.sphere(0.84), { ty: -0.26 })
+  return dome(p) + organic(103, 0.012, 2.6)(p)
+}
 const FIELDS = {
+  pomegranate: (p) => op.smoothUnion(pomRind(p), pomFlesh(p), 0.001),
   liver: (p) => {
     const right = op.at(p, SDF.ellipsoid([0.64, 0.42, 0.52]), { tx: 0.36, ty: 0.06, tz: -0.02 })
     const left = op.at(p, SDF.ellipsoid([0.62, 0.16, 0.35]), { tx: -0.42, ty: 0.18, tz: -0.02 })
@@ -142,14 +159,16 @@ function gradG(G, p) {
 function render(G, opts) {
   const { w: W, h: H, fov = 40, cam, look, recipe = null, markers = [], bg = [11, 31, 22] } = opts
   const out = Buffer.alloc(W * H * 4)
+  const { brightFront = false, camScale = 1 } = opts
   const camDir = normalize(sub(look, cam))
   const right = normalize(cross(camDir, [0, 1, 0]))
   const up = cross(right, camDir)
-  const focal = (H / 2) / Math.tan((fov * Math.PI) / 360)
-  const key = { dir: normalize([0.55, 0.75, 0.5]), color: [1.0, 0.95, 0.85], power: 2.6 }
-  const rim = { dir: normalize([-0.5, 0.35, -0.75]), color: [0.49, 0.89, 0.72], power: 1.6 }
-  const goldL = { dir: normalize([-0.45, -0.35, 0.6]), color: [0.91, 0.79, 0.42], power: 1.1 }
-  const hemi = { color: [0.25, 0.35, 0.28], power: 0.5 }
+  const focal = (H / 2) / Math.tan((fov * Math.PI) / 360) / camScale
+  const key = { dir: normalize([0.55, 0.75, 0.5]), color: [1.0, 0.95, 0.85], power: 1.45 }
+  const rim = { dir: normalize([-0.5, 0.35, -0.75]), color: brightFront ? [1.0, 0.75, 0.5] : [0.49, 0.89, 0.72], power: 0.85 }
+  const goldL = { dir: normalize([-0.45, -0.35, 0.6]), color: [0.91, 0.79, 0.42], power: 0.7 }
+  const frontK = { dir: normalize([-0.45, 0.3, 0.85]), color: [1.0, 0.9, 0.72], power: brightFront ? 1.05 : 0 }
+  const hemi = { color: [0.25, 0.35, 0.28], power: 0.45 }
 
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
@@ -197,11 +216,12 @@ function render(G, opts) {
         c = light(key, key.color, key.power)
         c = add(c, light(rim, rim.color, rim.power))
         c = add(c, light(goldL, goldL.color, goldL.power))
+        if (frontK.power > 0) c = add(c, light(frontK, frontK.color, frontK.power))
         c = add(c, scale(hemi.color, hemi.power * (dot(n, [0, 1, 0]) * 0.5 + 0.5)))
         col = [c[0] * base[0], c[1] * base[1], c[2] * base[2]]
         const fr = Math.pow(1 - Math.max(0, dot(n, v)), 3)
         col = add(col, scale([0.85, 0.75, 0.55], fr * 0.35))
-        col = col.map((v2) => Math.pow(Math.min(1, (v2 * 0.9) / (v2 * 0.9 + 1) * 1.6), 0.82) * 255)
+        col = col.map((v2) => Math.pow(v2 / (v2 + 1), 0.85) * 255)
       } else {
         col = [bg[0], bg[1], bg[2]]
       }
@@ -252,16 +272,21 @@ function noiseVals([u, v]) {
   return [NTILES[0][i], NTILES[1][i], NTILES[2][i]]
 }
 
-const recipeMap = { liver: RECIPES.liver, stomach: RECIPES.stomach, heart: RECIPES.heart, kidneys: RECIPES.kidney, pancreas: RECIPES.pancreas, intestines: RECIPES.intestines }
+const recipeMap = { liver: RECIPES.liver, stomach: RECIPES.stomach, heart: RECIPES.heart, kidneys: RECIPES.kidney, pancreas: RECIPES.pancreas, intestines: RECIPES.intestines, pomegranate: RECIPES.pomegranate }
 
 if (FIELDS[arg]) {
   const field = FIELDS[arg]
   const cam = [0, 0.25, 4.7]
   const cond = Object.values(CONDITIONS).find((c) => c.organ === arg)
   const markers = (cond ? cond.hotspots : []).map((h) => ({ pos: h.pos, r: 0.045, color: [1, 0.78, 0.25] }))
-  const G = buildGrid((x, y, z) => field([x, y, z]), 80)
+  const G = buildGrid((x, y, z) => field([x, y, z]), 84)
   const t0 = performance.now()
-  const buf = render(G, { w: SIZE, h: SIZE, cam, look: [0, 0.05, 0], recipe: recipeMap[arg], markers })
+  const buf = render(G, {
+    w: SIZE, h: SIZE, cam, look: [0, 0.05, 0],
+    recipe: recipeMap[arg], markers,
+    brightFront: arg === 'pomegranate',
+    camScale: arg === 'pomegranate' ? 1.4 : 1
+  })
   writePNG('/tmp/preview-' + arg + '.png', SIZE, SIZE, buf)
   console.log('preview-' + arg + '.png', (performance.now() - t0).toFixed(0) + 'ms')
 } else {

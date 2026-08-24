@@ -24,8 +24,8 @@ function fieldNoise(seed, amp, freq) {
 /* The rind: body sphere, hollowed, with a tilted opening cut */
 function rindField() {
   const bodyNoise = fieldNoise(101, 0.02, 2.2)
-  const cutShape = (q) => op.at(q, SDF.roundBox([0.52, 0.42, 0.42], 0.03), {
-    tx: 0.0, ty: 0.88, tz: 0.5, rx: -0.62
+  const cutShape = (q) => op.at(q, SDF.roundBox([0.62, 0.55, 0.5], 0.03), {
+    tx: 0.0, ty: 0.5, tz: 0.8, rx: -0.75
   })
   const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
   const tipShape = (q) => op.at(q, SDF.sphere(0.3), { ty: 1.02 }) // calyx base bulge
@@ -70,6 +70,32 @@ export function initHero(canvas, _opts = {}) {
   // widen UV fold (box projection scale) — keep default; scale object instead
   scene.add(rind)
 
+  /* calyx crown — six curved sepals rising from the tip */
+  const calyxMat = rindMat.clone()
+  const crown = new THREE.Group()
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + 0.3
+    const base = new THREE.Vector3(Math.cos(a) * 0.13, 0.92, Math.sin(a) * 0.13)
+    const tipPos = new THREE.Vector3(Math.cos(a) * 0.3, 1.24, Math.sin(a) * 0.3)
+    const spike = new THREE.Mesh(
+      new THREE.TubeGeometry(
+        new THREE.QuadraticBezierCurve3(
+          base,
+          base.clone().add(new THREE.Vector3(Math.cos(a) * 0.06, 0.14, Math.sin(a) * 0.06)),
+          tipPos
+        ),
+        8,
+        0.045,
+        8
+      ),
+      calyxMat
+    )
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), calyxMat)
+    cap.position.copy(tipPos)
+    crown.add(spike, cap)
+  }
+  scene.add(crown)
+
   const fleshMat = new THREE.MeshPhysicalMaterial({
     color: '#e9d3a4', roughness: 0.62, clearcoat: 0.18,
     sheen: 0.4, sheenColor: new THREE.Color('#fff3d0'), envMapIntensity: 0.6
@@ -85,36 +111,33 @@ export function initHero(canvas, _opts = {}) {
     envMapIntensity: 1.3
   })
   const arilGeo = new THREE.SphereGeometry(0.052, 10, 8)
-  const arils = new THREE.InstancedMesh(arilGeo, arilMat, 84)
+  const arils = new THREE.InstancedMesh(arilGeo, arilMat, 74)
   const m4 = new THREE.Matrix4()
   const q = new THREE.Quaternion()
   const e = new THREE.Euler()
   const s3 = new THREE.Vector3()
   // dome cap around the opening axis (rotated -0.62 about x, centered near the cut)
-  const cutAxis = new THREE.Vector3(0, Math.cos(-0.62), Math.sin(-0.62)) // opening normal
-  const center = new THREE.Vector3(0, 0.42, 0.1)
+  const cutAxis = new THREE.Vector3(0, Math.cos(0.75), Math.sin(0.75)).normalize() // opening normal
   const right = new THREE.Vector3(1, 0, 0)
   const up = new THREE.Vector3().crossVectors(cutAxis, right).normalize()
+  const domeC = new THREE.Vector3(0, -0.26, 0)
+  const domeR = 0.84
   let seedI = 0
   const rand = () => {
     seedI = (seedI * 16807) % 2147483647
     return seedI / 2147483647
   }
-  for (let i = 0; i < 84; i++) {
-    // distribute on a partial spherical cap: rings of arils
-    const ring = Math.floor(rand() * 5) // 0..4
+  for (let i = 0; i < 74; i++) {
+    // arils hug the exposed dome cap, angled toward the opening
     const a = rand() * Math.PI * 2
-    const rad = 0.06 + ring * 0.085 + rand() * 0.04
-    const tang = rad
-    const axial = 0.03 + Math.cos(rad / 0.6) * 0.05 + rand() * 0.04
-    const p = center
+    const capAng = Math.acos(1 - rand() * 0.55) // up to ~52° off the opening axis
+    const dir = cutAxis
       .clone()
-      .addScaledVector(right, Math.cos(a) * tang)
-      .addScaledVector(up, Math.sin(a) * tang)
-      .addScaledVector(cutAxis, axial + rand() * 0.04)
-    p.x += (rand() - 0.5) * 0.02
-    p.y += (rand() - 0.5) * 0.02
-    p.z += (rand() - 0.5) * 0.02
+      .multiplyScalar(Math.cos(capAng))
+      .addScaledVector(right, Math.sin(capAng) * Math.cos(a))
+      .addScaledVector(up, Math.sin(capAng) * Math.sin(a))
+      .normalize()
+    const p = domeC.clone().addScaledVector(dir, domeR + 0.015)
     const sc = 0.75 + rand() * 0.7
     e.set(rand() * 3.1, rand() * 3.1, rand() * 3.1)
     q.setFromEuler(e)
@@ -133,15 +156,15 @@ export function initHero(canvas, _opts = {}) {
   innerLight.position.set(0, 0.35, 0.55)
   scene.add(innerLight)
   const ember = new THREE.Mesh(
-    new THREE.CircleGeometry(0.55, 32),
+    new THREE.CircleGeometry(0.42, 32),
     new THREE.MeshBasicMaterial({
       map: glowTexture('rgba(255,180,90,1)', 'rgba(255,120,60,0)'),
       transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending,
       depthWrite: false, side: THREE.DoubleSide
     })
   )
-  ember.position.set(0, 0.3, 0.32)
-  ember.rotation.x = -1.15
+  ember.position.set(0, 0.24, 0.42)
+  ember.rotation.x = -0.75
   ember.visible = S('sprites')
   scene.add(ember)
   const glowSpark = new THREE.Sprite(
@@ -192,7 +215,7 @@ export function initHero(canvas, _opts = {}) {
 
   /* ---------- float animation ---------- */
   const pivot = new THREE.Group()
-  pivot.add(rind, flesh, arils, glowSprite(glowTexture('rgba(255,150,90,0.8)'), 0.5, 1.1))
+  pivot.add(rind, flesh, arils, crown, glowSprite(glowTexture('rgba(255,150,90,0.8)'), 0.5, 1.1))
   pivot.scale.setScalar(1.32)
   pivot.position.y = -0.1
   scene.add(pivot)
