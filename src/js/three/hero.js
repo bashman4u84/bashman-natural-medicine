@@ -66,7 +66,7 @@ export function initHero(canvas, _opts = {}) {
     color: '#ffffff', roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.5,
     sheen: 0.35, sheenColor: new THREE.Color('#ffb0a0'), envMapIntensity: 0.9
   })
-  const rind = new THREE.Mesh(sculptField(rindField(), { min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: IS_TOUCH ? 84 : 104 }), rindMat)
+  const rind = new THREE.Mesh(sculptField((x, y, z) => rindField()([x, y, z]), { min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: IS_TOUCH ? 84 : 104 }), rindMat)
   // widen UV fold (box projection scale) — keep default; scale object instead
   scene.add(rind)
 
@@ -100,7 +100,7 @@ export function initHero(canvas, _opts = {}) {
     color: '#e9d3a4', roughness: 0.62, clearcoat: 0.18,
     sheen: 0.4, sheenColor: new THREE.Color('#fff3d0'), envMapIntensity: 0.6
   })
-  const flesh = new THREE.Mesh(sculptField(fleshField(), { min: [-1.2, -1.2, -1.2], max: [1.2, 1.2, 1.2], res: IS_TOUCH ? 64 : 76 }), fleshMat)
+  const flesh = new THREE.Mesh(sculptField((x, y, z) => fleshField()([x, y, z]), { min: [-1.2, -1.2, -1.2], max: [1.2, 1.2, 1.2], res: IS_TOUCH ? 64 : 76 }), fleshMat)
   scene.add(flesh)
 
   /* ---------- arils: ruby gems clustered in the opening ---------- */
