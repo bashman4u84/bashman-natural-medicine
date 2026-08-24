@@ -138,6 +138,28 @@ const BUILDERS = {
       color: '#e9d3a4', roughness: 0.62, clearcoat: 0.15,
       sheen: 0.4, sheenColor: new THREE.Color('#fff3d0'), envMapIntensity: 0.5
     }))
+    /* calyx crown — six sepals, built at runtime (kept out of the bake) */
+    const crown = new THREE.Group()
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + 0.3
+      const base = new THREE.Vector3(Math.cos(a) * 0.13, 0.92, Math.sin(a) * 0.13)
+      const tipPos = new THREE.Vector3(Math.cos(a) * 0.3, 1.24, Math.sin(a) * 0.3)
+      const spike = new THREE.Mesh(
+        new THREE.TubeGeometry(
+          new THREE.QuadraticBezierCurve3(
+            base,
+            base.clone().add(new THREE.Vector3(Math.cos(a) * 0.06, 0.14, Math.sin(a) * 0.06)),
+            tipPos
+          ),
+          8, 0.045, 8
+        ),
+        rind.material
+      )
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), rind.material)
+      cap.position.copy(tipPos)
+      crown.add(spike, cap)
+    }
+    g.add(crown)
     const arils = new THREE.Mesh(await loadGeometry('pomegranate', 'arils'), phys({
       color: '#c2154c', roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.12,
       sheen: 0.7, sheenColor: new THREE.Color('#ff8ab0'),

@@ -93,29 +93,10 @@ const POM_PARTS = { rind: INGREDIENT_PARTS.pomegranate.find((p) => p.part === 'r
 const pomRindGeoRaw = sculptField((x, y, z) => POM_PARTS.rind.field()([x, y, z]), {
   min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: POM_PARTS.rind.res, iso: 0.012
 })
-// bake the calyx crown (6 sepals) into the rind buffer
-const crownGeos = []
-for (let i = 0; i < 6; i++) {
-  const a = (i / 6) * Math.PI * 2 + 0.3
-  const base = new THREE.Vector3(Math.cos(a) * 0.13, 0.92, Math.sin(a) * 0.13)
-  const tipPos = new THREE.Vector3(Math.cos(a) * 0.3, 1.24, Math.sin(a) * 0.3)
-  const spike = new THREE.TubeGeometry(
-    new THREE.QuadraticBezierCurve3(
-      base,
-      base.clone().add(new THREE.Vector3(Math.cos(a) * 0.06, 0.14, Math.sin(a) * 0.06)),
-      tipPos
-    ),
-    8, 0.045, 8
-  )
-  spike.translate(0, 0, 0)
-  crownGeos.push(spike)
-}
-let crownMerged = mergeGeometries(crownGeos)
-crownMerged.translate(0, 0, 0)
-// crown + rind in one buffer (raw geometries, then quantize once)
-const rindAll = mergeGeometries([pomRindGeoRaw, crownMerged], false)
+/* crown sepals are small runtime primitives in hero.js — merging them
+ * here kept corrupting the rind topology, so we bake the rind alone */
 writeModule('pomegranate', {
-  rind: geomToData(rindAll),
+  rind: geomToData(pomRindGeoRaw),
   flesh: bakeField(POM_PARTS.flesh.field, {
     min: [-1.2, -1.2, -1.2], max: [1.2, 1.2, 1.2], res: POM_PARTS.flesh.res
   }),
