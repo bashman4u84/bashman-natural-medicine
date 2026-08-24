@@ -236,7 +236,7 @@ export function initHero(canvas, _opts = {}) {
 
     pivot.rotation.y += dt * 0.16
     pivot.rotation.x = Math.sin(t * 0.21) * 0.05
-    pivot.position.y = Math.sin(t * 0.75) * 0.06 - scrollP * 0.5
+    pivot.position.y = -0.6 + Math.sin(t * 0.75) * 0.06 - scrollP * 0.5
 
     const breathe = 1 + Math.sin(t * 0.85) * 0.012
     rind.scale.setScalar(breathe)
