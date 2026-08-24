@@ -21,6 +21,25 @@ export function initScienceViewer(canvas, hotspotLayer) {
   controls.maxPolarAngle = 2.35
   controls.target.set(0, -0.05, 0)
 
+  /* frame an object so it fills the stage gracefully */
+  const _frame = new THREE.Box3()
+  const _sph = new THREE.Sphere()
+  function frameObject(obj) {
+    _frame.setFromObject(obj)
+    const r = _frame.getBoundingSphere(_sph).radius
+    const d = (r * 1.28) / Math.tan((40 * Math.PI) / 360)
+    const dir = camera.position.clone().sub(controls.target).normalize()
+    if (dir.lengthSq() < 0.01) dir.set(0, 0.2, 1).normalize()
+    gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 0.8, ease: 'power2.out' })
+    gsap.to(camera.position, {
+      x: dir.x * d,
+      y: dir.y * d + 0.12,
+      z: dir.z * d,
+      duration: 0.9,
+      ease: 'power2.out'
+    })
+  }
+
   const dust = driftPoints({ count: 60, size: 0.045, rMin: 2, rMax: 3.6 })
   scene.add(dust)
 
@@ -109,6 +128,7 @@ export function initScienceViewer(canvas, hotspotLayer) {
       gsap.to(next.scale, { x: 1, y: 1, z: 1, duration: 0.9, ease: 'elastic.out(1, 0.75)' })
       next.position.y = 0.4
       gsap.to(next.position, { y: 0, duration: 0.9, ease: 'power3.out' })
+      frameObject(next)
       if (hotspotsList) setTimeout(() => setHotspots(hotspotsList, onHotspotOpen), 700)
     }
     if (current) {

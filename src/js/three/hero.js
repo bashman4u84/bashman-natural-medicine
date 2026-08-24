@@ -1,109 +1,176 @@
 import * as THREE from 'three'
-import { initStage, studioLights, driftPoints, glowTexture, REDUCED } from './core.js'
-import { displace } from './organs.js'
+import { initStage, studioLights, driftPoints, glowTexture, IS_TOUCH } from './core.js'
+import { SDF, op, sculptField, makeNoise, fbm } from './sculpt.js'
+import { pomegranateTextures } from './tissues.js'
+import { RECIPES } from './tissue-recipes.js'
 
-function leafGeometry(len = 1) {
-  const s = new THREE.Shape()
-  s.moveTo(0, -len * 0.45)
-  s.bezierCurveTo(len * 0.4, -len * 0.22, len * 0.38, len * 0.26, 0, len * 0.62)
-  s.bezierCurveTo(-len * 0.38, len * 0.26, -len * 0.4, -len * 0.22, 0, -len * 0.45)
-  const g = new THREE.ShapeGeometry(s, 14)
-  const pos = g.attributes.position
-  for (let i = 0; i < pos.count; i++) {
-    const y = pos.getY(i)
-    pos.setZ(i, Math.sin(((y / len) * 0.5 + 0.45) * Math.PI * 2) * 0.1 * len)
-  }
-  g.computeVertexNormals()
-  return g
+/* ============================================================
+ * hero.js — "The Healing Seed"
+ *
+ * A half-open pomegranate — the Sunna fruit the tradition calls
+ * the remedy of the heart — with a warm golden light glowing
+ * from its interior and ruby arils visible along the rim. Rich
+ * leathery rind, jewel-like seeds, thin orbit rings on the
+ * forest-green stage, and drifting gold motes. Reads crafted,
+ * not procedural, and matches the brand: nature, the Sunnah,
+ * healing from the root.
+ * ============================================================ */
+
+function fieldNoise(seed, amp, freq) {
+  const n = makeNoise(seed, 6)
+  return (p) => fbm(n, p[0] * freq + 0.3, p[1] * freq + 0.3, p[2] * freq + 0.3, 2) * amp
 }
 
+/* The rind: body sphere, hollowed, with a tilted opening cut */
+function rindField() {
+  const bodyNoise = fieldNoise(101, 0.02, 2.2)
+  const cut = op.at((p) => p, SDF.roundBox([0.52, 0.42, 0.42], 0.03), {
+    tx: 0.0, ty: 0.88, tz: 0.5, rx: -0.62
+  })
+  const inner = op.at((p) => p, SDF.sphere(0.78), { ty: -0.06 })
+  const upperTip = op.at((p) => p, SDF.sphere(0.3), { ty: 1.02 }) // calyx base bulge
+  return (p) => {
+    // lumpy body
+    let d = SDF.ellipsoid([0.98, 0.92, 0.92])(p) + bodyNoise(p)
+    d = op.smoothUnion(d, upperTip(p), 0.2)
+    // hollow interior
+    d = op.smoothSubtract(d, inner(p), 0.02)
+    // the opening (crisp chisel cut)
+    d = op.subtract(d, cut(p))
+    return d
+  }
+}
+
+/* interior flesh dome the arils sit on */
+function fleshField() {
+  const dome = op.at((p) => p, SDF.sphere(0.84), { ty: -0.26 })
+  return (p) => {
+    const n = fieldNoise(103, 0.012, 2.6)(p)
+    return dome(p) + n
+  }
+}
+
+const _v = new THREE.Vector3()
+
 export function initHero(canvas) {
-  const stage = initStage(canvas, { fov: 44, camPos: [0, 0.1, 4.6], shadows: false })
+  const stage = initStage(canvas, { fov: 42, camPos: [0, 0.12, 4.7], shadows: false, exposure: 1.02 })
   const { scene, camera } = stage
   studioLights(scene)
 
-  const coreGeo = new THREE.SphereGeometry(1.05, window.innerWidth < 900 ? 56 : 110, Math.round(window.innerWidth < 900 ? 42 : 84))
-  displace(coreGeo, 0.07, 1.9, 3)
-  const coreMat = new THREE.MeshPhysicalMaterial({
-    color: '#155c41',
-    roughness: 0.24,
-    metalness: 0.08,
-    clearcoat: 0.9,
-    clearcoatRoughness: 0.3,
-    sheen: 0.8,
-    sheenColor: new THREE.Color('#7ee2b8'),
-    envMapIntensity: 1.1
+  /* ---------- pomegranate ---------- */
+  const tex = pomegranateTextures()
+  const rindMat = new THREE.MeshPhysicalMaterial({
+    map: tex.map, bumpMap: tex.bump, bumpScale: 0.5,
+    color: '#ffffff', roughness: 0.38, clearcoat: 0.5, clearcoatRoughness: 0.5,
+    sheen: 0.35, sheenColor: new THREE.Color('#ffb0a0'), envMapIntensity: 0.9
   })
-  const core = new THREE.Mesh(coreGeo, coreMat)
-  scene.add(core)
+  const rind = new THREE.Mesh(sculptField(rindField(), { min: [-1.4, -1.4, -1.4], max: [1.4, 1.4, 1.4], res: IS_TOUCH ? 84 : 104 }), rindMat)
+  // widen UV fold (box projection scale) — keep default; scale object instead
+  scene.add(rind)
 
-  const shell = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(1.62, 1),
-    new THREE.MeshBasicMaterial({ color: '#e8c96a', wireframe: true, transparent: true, opacity: 0.07 })
-  )
-  scene.add(shell)
+  const fleshMat = new THREE.MeshPhysicalMaterial({
+    color: '#e9d3a4', roughness: 0.62, clearcoat: 0.18,
+    sheen: 0.4, sheenColor: new THREE.Color('#fff3d0'), envMapIntensity: 0.6
+  })
+  const flesh = new THREE.Mesh(sculptField(fleshField(), { min: [-1.2, -1.2, -1.2], max: [1.2, 1.2, 1.2], res: IS_TOUCH ? 64 : 76 }), fleshMat)
+  scene.add(flesh)
 
-  const halo = new THREE.Sprite(
+  /* ---------- arils: ruby gems clustered in the opening ---------- */
+  const arilMat = new THREE.MeshPhysicalMaterial({
+    color: '#c2154c', roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.12,
+    sheen: 0.7, sheenColor: new THREE.Color('#ff8ab0'),
+    emissive: new THREE.Color('#5c0820'), emissiveIntensity: 0.35,
+    envMapIntensity: 1.3
+  })
+  const arilGeo = new THREE.SphereGeometry(0.052, 10, 8)
+  const arils = new THREE.InstancedMesh(arilGeo, arilMat, 84)
+  const m4 = new THREE.Matrix4()
+  const q = new THREE.Quaternion()
+  const e = new THREE.Euler()
+  const s3 = new THREE.Vector3()
+  // dome cap around the opening axis (rotated -0.62 about x, centered near the cut)
+  const cutAxis = new THREE.Vector3(0, Math.cos(-0.62), Math.sin(-0.62)) // opening normal
+  const center = new THREE.Vector3(0, 0.42, 0.1)
+  const right = new THREE.Vector3(1, 0, 0)
+  const up = new THREE.Vector3().crossVectors(cutAxis, right).normalize()
+  let seedI = 0
+  const rand = () => {
+    seedI = (seedI * 16807) % 2147483647
+    return seedI / 2147483647
+  }
+  for (let i = 0; i < 84; i++) {
+    // distribute on a partial spherical cap: rings of arils
+    const ring = Math.floor(rand() * 5) // 0..4
+    const a = rand() * Math.PI * 2
+    const rad = 0.06 + ring * 0.085 + rand() * 0.04
+    const tang = rad
+    const axial = 0.1 + Math.cos(rad / 0.6) * 0.06 + rand() * 0.05
+    const p = center
+      .clone()
+      .addScaledVector(right, Math.cos(a) * tang)
+      .addScaledVector(up, Math.sin(a) * tang)
+      .addScaledVector(cutAxis, axial + rand() * 0.06)
+    p.x += (rand() - 0.5) * 0.02
+    p.y += (rand() - 0.5) * 0.02
+    p.z += (rand() - 0.5) * 0.02
+    const sc = 0.75 + rand() * 0.7
+    e.set(rand() * 3.1, rand() * 3.1, rand() * 3.1)
+    q.setFromEuler(e)
+    s3.set(sc * 0.92, sc, sc * 0.92)
+    m4.compose(p, q, s3)
+    arils.setMatrixAt(i, m4)
+  }
+  arils.instanceMatrix.needsUpdate = true
+  scene.add(arils)
+
+  /* ---------- the glowing heart of the fruit ---------- */
+  const innerLight = new THREE.PointLight('#ffb14e', 30, 9, 2)
+  innerLight.position.set(0, 0.35, 0.55)
+  scene.add(innerLight)
+  const glowSpark = new THREE.Sprite(
     new THREE.SpriteMaterial({
-      map: glowTexture('rgba(126,226,184,0.85)'),
-      transparent: true,
-      opacity: 0.34,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending
+      map: glowTexture('rgba(255,190,110,0.9)'),
+      transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending
     })
   )
-  halo.scale.setScalar(6.4)
-  halo.position.z = -0.8
-  scene.add(halo)
+  glowSpark.scale.setScalar(2.2)
+  glowSpark.position.set(0, 0.42, 0.4)
+  scene.add(glowSpark)
 
-  const innerLight = new THREE.PointLight('#ffd97a', 26, 8, 2)
-  scene.add(innerLight)
-
+  /* ---------- orbit rings + gold dust ---------- */
   const rings = []
-  ;[1.72, 2.14].forEach((r, i) => {
+  ;[1.62, 1.98].forEach((r, i) => {
     const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(r, 0.005, 8, 140),
-      new THREE.MeshBasicMaterial({ color: i === 0 ? '#7ee2b8' : '#e8c96a', transparent: true, opacity: 0.16 })
+      new THREE.TorusGeometry(r, 0.006 + i * 0.002, 8, 160),
+      new THREE.MeshBasicMaterial({ color: i === 0 ? '#e8c96a' : '#8fae8c', transparent: true, opacity: i === 0 ? 0.34 : 0.2 })
     )
-    ring.rotation.x = Math.PI / 2 - 0.32 - i * 0.28
-    ring.rotation.y = i * 0.4
+    ring.rotation.x = Math.PI / 2 - 0.34 - i * 0.26
+    ring.rotation.y = i * 0.5
     scene.add(ring)
     rings.push(ring)
   })
 
-  const leafGroup = new THREE.Group()
-  const leafGeos = [leafGeometry(0.52), leafGeometry(0.36)]
-  const palette = ['#3fa372', '#2c7a54', '#58b98a', '#8fd8b4', '#d9b64a']
-  const leaves = []
-  for (let i = 0; i < 9; i++) {
-    const mat = new THREE.MeshStandardMaterial({
-      color: palette[i % palette.length],
-      roughness: 0.5,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.92,
-      sheen: 0.6,
-      sheenColor: new THREE.Color('#ffffff')
+  const halo = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: glowTexture('rgba(232,201,106,0.55)'),
+      transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending
     })
-    const leaf = new THREE.Mesh(leafGeos[i % 2], mat)
-    const pivot = new THREE.Group()
-    pivot.add(leaf)
-    leafGroup.add(pivot)
-    leaves.push({ pivot, leaf, speed: 0.14 + Math.random() * 0.22, phase: (i / 9) * Math.PI * 2, rad: i < 5 ? 1.75 : 2.2, bob: 0.15 + Math.random() * 0.25 })
-  }
-  leafGroup.rotation.x = 0.42
-  scene.add(leafGroup)
+  )
+  halo.scale.setScalar(7.2)
+  halo.position.z = -1.2
+  scene.add(halo)
 
-  const dust = driftPoints({ count: window.innerWidth < 900 ? 55 : 110, size: 0.05 })
+  const dust = driftPoints({ count: IS_TOUCH ? 40 : 80, colors: ['#e8c96a', '#f4dc9a', '#ffd97a'], size: 0.05, rMin: 1.5, rMax: 3.2 })
   scene.add(dust)
 
-  let scrollP = 0
-  let mx = 0
-  let my = 0
-  let tmx = 0
-  let tmy = 0
+  /* ---------- float animation ---------- */
+  const pivot = new THREE.Group()
+  pivot.add(rind, flesh, arils, glowSprite(glowTexture('rgba(255,150,90,0.8)'), 0.5, 1.1))
+  scene.add(pivot)
 
-  if (!REDUCED && window.matchMedia('(pointer: fine)').matches) {
+  let scrollP = 0
+  let mx = 0, my = 0, tmx = 0, tmy = 0
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && matchMedia('(pointer: fine)').matches) {
     window.addEventListener('pointermove', (e) => {
       tmx = (e.clientX / window.innerWidth - 0.5) * 2
       tmy = (e.clientY / window.innerHeight - 0.5) * 2
@@ -111,51 +178,45 @@ export function initHero(canvas) {
   }
 
   stage.setRender((dt, t) => {
-    mx += (tmx - mx) * 0.05
-    my += (tmy - my) * 0.05
+    mx += (tmx - mx) * 0.045
+    my += (tmy - my) * 0.045
 
-    const breathe = 1 + Math.sin(t * 0.9) * 0.022
-    core.scale.setScalar(breathe * (1 - scrollP * 0.32))
-    core.position.y = scrollP * 1.05
-    core.rotation.y += dt * 0.12
-    core.rotation.z = Math.sin(t * 0.23) * 0.06
+    pivot.rotation.y += dt * 0.16
+    pivot.rotation.x = Math.sin(t * 0.21) * 0.05
+    pivot.position.y = Math.sin(t * 0.75) * 0.06 - scrollP * 0.5
 
-    shell.scale.setScalar((1.04 + Math.sin(t * 0.6) * 0.03) * (1 - scrollP * 0.3))
-    shell.rotation.y -= dt * 0.07
-    shell.rotation.x = Math.sin(t * 0.19) * 0.2
-    shell.position.y = core.position.y
+    const breathe = 1 + Math.sin(t * 0.85) * 0.012
+    rind.scale.setScalar(breathe)
+    flesh.scale.setScalar(breathe)
+    arils.scale.setScalar(breathe)
 
-    halo.material.opacity = 0.34 * (1 - scrollP * 0.75) + Math.sin(t * 1.4) * 0.02
-    halo.position.y = core.position.y
-    innerLight.intensity = 20 + Math.sin(t * 1.7) * 7
-    innerLight.position.y = core.position.y
+    innerLight.intensity = 24 + Math.sin(t * 1.6) * 6 + scrollP * 10
+    glowSpark.material.opacity = 0.42 + Math.sin(t * 1.3) * 0.1 + scrollP * 0.3
 
     rings.forEach((r, i) => {
-      r.rotation.z += dt * (i === 0 ? 0.1 : -0.06)
-      r.position.y = core.position.y * (0.9 + i * 0.1)
-      r.material.opacity = 0.16 * (1 - scrollP * 0.8)
+      r.rotation.z += dt * (i === 0 ? 0.09 : -0.055)
+      r.position.y = -scrollP * 0.3
+      r.material.opacity = (i === 0 ? 0.34 : 0.2) * (1 - scrollP * 0.7)
     })
-
-    const spin = 1 - scrollP * 0.65
-    leafGroup.rotation.y += dt * 0.1 * spin
-    leaves.forEach((l) => {
-      const a = l.phase + t * l.speed * spin
-      l.pivot.position.set(Math.cos(a) * l.rad, Math.sin(a * 1.4) * l.bob, Math.sin(a) * l.rad)
-      l.pivot.rotation.set(Math.sin(a) * 0.7, a, 0.4)
-    })
+    halo.material.opacity = 0.2 * (1 - scrollP * 0.6)
 
     dust.userData.tick(dt)
-    dust.position.y = scrollP * 0.6
+    dust.position.y = -scrollP * 0.6
 
-    camera.position.x = mx * 0.42
-    camera.position.y = 0.1 - my * 0.3 + scrollP * 0.35
-    camera.lookAt(0, scrollP * 0.7, 0)
+    camera.position.x = mx * 0.5
+    camera.position.y = 0.12 - my * 0.36 + scrollP * 0.3
+    camera.lookAt(0, scrollP * 0.9, 0)
   })
 
   return {
-    setScroll(p) {
-      scrollP = p
-    },
+    setScroll(p) { scrollP = p },
     dispose: stage.dispose
   }
+}
+
+function glowSprite(map, opacity, scale) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map, transparent: true, opacity, depthWrite: false, blending: THREE.AdditiveBlending }))
+  s.scale.setScalar(scale)
+  s.position.set(0, 0.05, -1.4)
+  return s
 }

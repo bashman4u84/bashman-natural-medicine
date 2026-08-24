@@ -28,13 +28,13 @@ export const RECIPES = {
   },
 
   stomach: {
-    palette: { base: [0.66, 0.3, 0.23], dark: [0.5, 0.2, 0.16], light: [0.78, 0.42, 0.3], grain: 0.3, speckle: 0.08 },
+    palette: { base: [0.56, 0.23, 0.18], dark: [0.4, 0.14, 0.11], light: [0.68, 0.34, 0.25], grain: 0.3, speckle: 0.08 },
     color(u, v, l, m, c2) {
       let col = mix(this.palette.base, this.palette.dark, Math.max(0, l) * this.palette.grain + Math.max(0, m) * 0.3)
       col = mix(col, this.palette.light, Math.max(0, -l) * this.palette.grain + Math.max(0, -m) * 0.16)
       // rugae ridges: subtle lighter streaks
       const fold = Math.sin(u * Math.PI * 2 * 7 + Math.sin(v * Math.PI * 2) * 1.6 + l * 1.5) * 0.5 + 0.5
-      col = mix(col, [0.82, 0.5, 0.36], fold * 0.14)
+      col = mix(col, [0.72, 0.38, 0.27], fold * 0.09)
       return col
     },
     bump(u, v, l, m, c2) {
@@ -59,12 +59,12 @@ export const RECIPES = {
   },
 
   heart: {
-    palette: { base: [0.44, 0.1, 0.12], dark: [0.26, 0.05, 0.07], light: [0.56, 0.15, 0.14], grain: 0.3, speckle: 0.12 },
+    palette: { base: [0.4, 0.09, 0.11], dark: [0.24, 0.045, 0.06], light: [0.52, 0.13, 0.12], grain: 0.3, speckle: 0.12 },
     color(u, v, l, m, c2) {
       let col = mix(this.palette.base, this.palette.dark, Math.max(0, l) * this.palette.grain + Math.max(0, m) * 0.3)
       col = mix(col, this.palette.light, Math.max(0, -l) * this.palette.grain + Math.max(0, -m) * 0.16)
       // epicardial fat blush on the upper region
-      col = mix(col, [0.62, 0.44, 0.26], Math.max(0, 0.3 - v) * 0.32 * (1 + m * 0.5))
+      col = mix(col, [0.6, 0.42, 0.24], Math.max(0, v - 0.62) * 0.35 * (1 + m * 0.5))
       return col
     },
     bump(u, v, l, m, c2) {
@@ -78,8 +78,8 @@ export const RECIPES = {
     color(u, v, l, m, c2) {
       // lobulation from low-frequency noise
       const lob = Math.sin(u * Math.PI * 2 * 3 + l * 4) * Math.sin(v * Math.PI * 2 * 3 + l * 3) * 0.5 + 0.5
-      let col = mix(this.palette.base, this.palette.dark, (1 - lob) * 0.5 + Math.max(0, m) * 0.2)
-      col = mix(col, this.palette.light, lob * 0.55)
+      let col = mix(this.palette.base, this.palette.dark, (1 - lob) * 0.35 + Math.max(0, m) * 0.18)
+      col = mix(col, this.palette.light, lob * 0.4)
       return col
     },
     bump(u, v, l, m, c2) {

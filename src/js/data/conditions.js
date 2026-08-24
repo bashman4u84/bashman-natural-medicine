@@ -15,9 +15,9 @@ export const CONDITIONS = {
       { name: 'Liver-cleanse diet', note: 'Beetroot, dandelion greens, olive oil and strict abstinence from alcohol and processed fats.' }
     ],
     hotspots: [
-      { pos: [0.55, 0.2, 0.55], title: 'Inflamed right lobe', body: 'Virus-filled cells swell and redden — this is where ALT/AST enzymes leak into the blood.' },
-      { pos: [-0.72, 0.3, 0.4], title: 'Viral replication zone', body: 'HBV hijacks cell machinery here, copying itself millions of times per day.' },
-      { pos: [0.26, -0.44, 0.5], title: 'Gallbladder under pressure', body: 'Swelling squeezes the bile sac — one cause of the dark urine and nausea you feel.' }
+      { pos: [0.42, 0.08, 0.42], title: 'Inflamed right lobe', body: 'Virus-filled cells swell and redden — this is where ALT/AST enzymes leak into the blood.' },
+      { pos: [-0.62, 0.2, 0.26], title: 'Viral replication zone', body: 'HBV hijacks cell machinery here, copying itself millions of times per day.' },
+      { pos: [0.32, -0.5, 0.38], title: 'Gallbladder under pressure', body: 'Swelling squeezes the bile sac — one cause of the dark urine and nausea you feel.' }
     ]
   },
   ulcer: {
@@ -36,9 +36,9 @@ export const CONDITIONS = {
       { name: 'Sunnah meal-timing plan', note: 'Two-third rule, never eat to fullness, structured fasting windows so ulcers close permanently.' }
     ],
     hotspots: [
-      { pos: [-0.62, 0.05, 0.45], title: 'Eroded mucus shield', body: 'The pink protective coat is worn thin — acid touches raw flesh here first.' },
-      { pos: [-0.05, -0.52, 0.45], title: 'H. pylori colony', body: 'Spiral bacteria drill into the lining, keeping the wound from closing.' },
-      { pos: [-0.42, 0.75, 0.35], title: 'Acid surge zone', body: 'Where reflux burns upward — the source of that sour night-time heartburn.' }
+      { pos: [-0.5, 0.12, 0.2], title: 'Eroded mucus shield', body: 'The pink protective coat is worn thin — acid touches raw flesh here first.' },
+      { pos: [-0.1, -0.4, 0.24], title: 'H. pylori colony', body: 'Spiral bacteria drill into the lining, keeping the wound from closing.' },
+      { pos: [-0.42, 0.72, 0.1], title: 'Acid surge zone', body: 'Where reflux burns upward — the source of that sour night-time heartburn.' }
     ]
   },
   typhoid: {
@@ -57,9 +57,9 @@ export const CONDITIONS = {
       { name: 'Hygiene & water protocol', note: 'We teach the household habits that stop re-infection for good.' }
     ],
     hotspots: [
-      { pos: [0.3, 0.12, 0.5], title: 'Bacteria breaching the gut wall', body: 'Salmonella tunnels through the intestinal lining into nearby lymph nodes.' },
-      { pos: [-0.68, -0.12, 0.4], title: 'Inflamed colon', body: 'Toxin build-up irritates the large intestine — cramps and urgent stools follow.' },
-      { pos: [0.02, -0.8, 0.5], title: 'Absorption blocked', body: 'A wounded gut cannot absorb iron or vitamins — the root of the weakness you feel.' }
+      { pos: [0.32, 0.14, 0.28], title: 'Bacteria breaching the gut wall', body: 'Salmonella tunnels through the intestinal lining into nearby lymph nodes.' },
+      { pos: [-0.66, -0.1, 0.12], title: 'Inflamed colon', body: 'Toxin build-up irritates the large intestine — cramps and urgent stools follow.' },
+      { pos: [0.0, -0.76, 0.3], title: 'Absorption blocked', body: 'A wounded gut cannot absorb iron or vitamins — the root of the weakness you feel.' }
     ]
   },
   hypertension: {
@@ -78,9 +78,9 @@ export const CONDITIONS = {
       { name: 'Hijama circulation program', note: 'Targeted cupping to release stagnation and lighten the cardiac load.' }
     ],
     hotspots: [
-      { pos: [0.08, -0.3, 0.7], title: 'Overworked left chamber', body: 'Pumping against narrow arteries thickens this wall — an early warning sign.' },
-      { pos: [0.28, 1.02, 0.2], title: 'Stiff aortic arch', body: 'Years of pressure scar the great artery, raising your numbers further.' },
-      { pos: [-0.42, 0.85, 0.3], title: 'Vessels under strain', body: 'Tiny vessels in eyes and kidneys suffer first — silence is not safety.' }
+      { pos: [0.12, -0.28, 0.38], title: 'Overworked left chamber', body: 'Pumping against narrow arteries thickens this wall — an early warning sign.' },
+      { pos: [0.3, 0.92, 0.02], title: 'Stiff aortic arch', body: 'Years of pressure scar the great artery, raising your numbers further.' },
+      { pos: [-0.3, 0.76, 0.14], title: 'Vessels under strain', body: 'Tiny vessels in eyes and kidneys suffer first — silence is not safety.' }
     ]
   },
   diabetes: {
@@ -99,9 +99,9 @@ export const CONDITIONS = {
       { name: 'Walking sunnah schedule', note: 'Post-meal walks timed to flatten sugar spikes — simple, free, powerful.' }
     ],
     hotspots: [
-      { pos: [0.78, 0.18, 0.4], title: 'Exhausted beta cells', body: 'Insulin factories here burn out after years of sugar floods.' },
-      { pos: [0.0, -0.04, 0.35], title: 'Insulin output falling', body: 'Production dips below demand — sugar creeps up in every meal’s aftermath.' },
-      { pos: [-0.75, 0.24, 0.35], title: 'Fatty tail infiltration', body: 'Fat crowds the gland, strangling what function remains.' }
+      { pos: [0.78, 0.06, 0.28], title: 'Exhausted beta cells', body: 'Insulin factories here burn out after years of sugar floods.' },
+      { pos: [0.08, -0.02, 0.18], title: 'Insulin output falling', body: 'Production dips below demand — sugar creeps up in every meal’s aftermath.' },
+      { pos: [-0.72, 0.12, 0.16], title: 'Fatty tail infiltration', body: 'Fat crowds the gland, strangling what function remains.' }
     ]
   },
   kidney: {
@@ -120,9 +120,9 @@ export const CONDITIONS = {
       { name: 'BP & sugar co-management', note: 'Because kidneys fail when these two run wild — we treat all three together.' }
     ],
     hotspots: [
-      { pos: [0.7, 0.16, 0.4], title: 'Clogged micro-filters', body: 'Nephrons choke on protein and sugar debris — foam in urine is their cry.' },
-      { pos: [-0.36, -0.46, 0.35], title: 'Stone in the ureter', body: 'A crystal lodged mid-passage — the cause of waves of sharp flank pain.' },
-      { pos: [0.0, -1.1, 0.55], title: 'Irritated bladder', body: 'Backed-up waste burns the bladder wall, urging you day and night.' }
+      { pos: [0.62, 0.14, 0.26], title: 'Clogged micro-filters', body: 'Nephrons choke on protein and sugar debris — foam in urine is their cry.' },
+      { pos: [-0.33, -0.44, 0.22], title: 'Stone in the ureter', body: 'A crystal lodged mid-passage — the cause of waves of sharp flank pain.' },
+      { pos: [0.0, -1.06, 0.46], title: 'Irritated bladder', body: 'Backed-up waste burns the bladder wall, urging you day and night.' }
     ]
   }
 }

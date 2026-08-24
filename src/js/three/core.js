@@ -31,7 +31,7 @@ export function initStage(canvas, opts = {}) {
   if (!alpha) scene.background = new THREE.Color('#0b1f16')
 
   const pmrem = new THREE.PMREMGenerator(renderer)
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.05).texture
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.035).texture
 
   const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 60)
   camera.position.set(...camPos)

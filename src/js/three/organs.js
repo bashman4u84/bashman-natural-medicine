@@ -147,8 +147,8 @@ export function buildStomach() {
     map: null, bump: t.bump, bumpScale: 0.5, roughness: 0.45,
     color: '#a85a42', clearcoat: 0.3, sheen: 0.4, sheenColor: '#ffc7ae'
   })
-  const eso = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.22, 6, 14), stubMat)
-  eso.position.set(0.02, 1.16, -0.02)
+  const eso = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.16, 6, 14), stubMat)
+  eso.position.set(0.02, 1.1, -0.02)
   group.add(eso)
   const duo = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.14, 6, 14), stubMat)
   duo.position.set(0.6, 0.3, -0.05)
@@ -378,17 +378,20 @@ function catmull(points, samples) {
 }
 
 function smallIntestinePts() {
+  /* three stacked spirals — the classic coiled look of the small bowel */
   const out = []
-  const turns = 2.1
-  const N = 130
+  const N = 150
   for (let i = 0; i <= N; i++) {
     const t = i / N
-    const a = t * Math.PI * 2 * turns
-    const r = 0.42 - t * 0.2
+    const row = Math.min(2, Math.floor(t * 3))
+    const local = t * 3 - row
+    const a = local * Math.PI * 2 * 1.35 + row * 2.4
+    const r = 0.36 - local * 0.16
+    const y = 0.46 - row * 0.26 + Math.sin(a * 0.8) * 0.03
     out.push([
-      Math.cos(a) * r + Math.sin(a * 1.7) * 0.05,
-      0.5 - t * 0.72 + Math.sin(a * 0.9) * 0.05,
-      0.1 + Math.sin(a * 1.3) * 0.05
+      Math.cos(a) * r + (Math.sin(a * 1.9) * 0.05),
+      y,
+      0.16 + Math.sin(a * 1.5) * 0.06
     ])
   }
   return out
@@ -415,7 +418,7 @@ function intestineField() {
     colonRadii,
     0.04
   )
-  const small = capsuleSweep(smallIntestinePts(), smallIntestinePts().map(() => 0.085), 0.03)
+  const small = capsuleSweep(smallIntestinePts(), smallIntestinePts().map(() => 0.095), 0.03)
   return (p) => {
     let d = op.smoothUnion(colon(p), small(p), 0.04)
     d += organic(61, 0.01, 3.6)(p)
