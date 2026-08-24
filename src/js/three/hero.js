@@ -130,8 +130,9 @@ const BUILDERS = {
     const g = new THREE.Group()
     const t = pomegranateTex()
     const rind = new THREE.Mesh(await loadGeometry('pomegranate', 'rind'), phys({
-      map: t.map, bumpMap: t.bump, bumpScale: 0.3, color: '#ffffff',
-      roughness: 0.42, clearcoat: 0.3, sheen: 0.15, sheenColor: new THREE.Color('#ff8a7a')
+      map: t.map, bumpMap: t.bump, bumpScale: 0.26, color: '#ffffff',
+      roughness: 0.58, clearcoat: 0.22, clearcoatRoughness: 0.8,
+      sheen: 0.12, sheenColor: new THREE.Color('#ff8a7a'), envMapIntensity: 0.55
     }))
     const flesh = new THREE.Mesh(await loadGeometry('pomegranate', 'flesh'), phys({
       color: '#e9d3a4', roughness: 0.62, clearcoat: 0.15,
