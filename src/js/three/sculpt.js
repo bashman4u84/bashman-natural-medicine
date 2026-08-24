@@ -194,8 +194,8 @@ export function capsuleSweep(points, radii, smoothK = 0.05) {
     segs.push({ a: points[i], b: points[i + 1], ra: radii[i], rb: radii[i + 1] })
   }
   return (p) => {
-    let d = Infinity
-    for (let i = 0; i < segs.length; i++) {
+    let d = SDF.cone(segs[0].a, segs[0].b, segs[0].ra, segs[0].rb)(p)
+    for (let i = 1; i < segs.length; i++) {
       const s = segs[i]
       d = op.smoothUnion(d, SDF.cone(s.a, s.b, s.ra, s.rb)(p), smoothK)
     }

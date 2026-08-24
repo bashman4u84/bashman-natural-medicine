@@ -13,13 +13,13 @@ const clamp01 = (v) => Math.min(1, Math.max(0, v))
 
 export const RECIPES = {
   liver: {
-    palette: { base: [0.46, 0.17, 0.12], dark: [0.3, 0.09, 0.07], light: [0.56, 0.27, 0.19], grain: 0.34, speckle: 0.1 },
+    palette: { base: [0.38, 0.13, 0.09], dark: [0.24, 0.07, 0.05], light: [0.47, 0.2, 0.13], grain: 0.34, speckle: 0.1 },
     color(u, v, l, m, c2) {
       let col = mix(this.palette.base, this.palette.dark, Math.max(0, l) * this.palette.grain + Math.max(0, m) * 0.3)
       col = mix(col, this.palette.light, Math.max(0, -l) * this.palette.grain + Math.max(0, -m) * 0.18)
       col = mix(col, this.palette.light, Math.min(1, Math.max(0, c2 - 0.35) * this.palette.speckle * 3))
       // rare greenish patches (bile tint)
-      col = mix(col, [0.42, 0.3, 0.16], Math.max(0, -m - 0.55) * 2.2 * 0.35)
+      col = mix(col, [0.35, 0.26, 0.12], Math.max(0, -m - 0.55) * 2.2 * 0.3)
       return col
     },
     bump(u, v, l, m, c2) {
@@ -59,12 +59,12 @@ export const RECIPES = {
   },
 
   heart: {
-    palette: { base: [0.52, 0.13, 0.15], dark: [0.34, 0.07, 0.09], light: [0.66, 0.22, 0.2], grain: 0.3, speckle: 0.12 },
+    palette: { base: [0.44, 0.1, 0.12], dark: [0.26, 0.05, 0.07], light: [0.56, 0.15, 0.14], grain: 0.3, speckle: 0.12 },
     color(u, v, l, m, c2) {
       let col = mix(this.palette.base, this.palette.dark, Math.max(0, l) * this.palette.grain + Math.max(0, m) * 0.3)
       col = mix(col, this.palette.light, Math.max(0, -l) * this.palette.grain + Math.max(0, -m) * 0.16)
       // epicardial fat blush on the upper region
-      col = mix(col, [0.78, 0.58, 0.36], Math.max(0, 0.38 - v) * 0.55 * (1 + m))
+      col = mix(col, [0.62, 0.44, 0.26], Math.max(0, 0.3 - v) * 0.32 * (1 + m * 0.5))
       return col
     },
     bump(u, v, l, m, c2) {

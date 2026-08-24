@@ -83,18 +83,18 @@ export function buildLiver() {
     color: '#4f9e57', roughness: 0.18, transmission: 0.35, thickness: 0.5,
     clearcoat: 0.8, transparent: true, opacity: 0.95
   })
-  const gb = new THREE.Mesh(new THREE.CapsuleGeometry(0.115, 0.13, 6, 18), gbMat)
-  gb.position.set(0.24, -0.72, 0.3)
-  gb.rotation.set(0.3, 0, -0.5)
+  const gb = new THREE.Mesh(new THREE.CapsuleGeometry(0.115, 0.1, 6, 18), gbMat)
+  gb.position.set(0.26, -0.6, 0.26)
+  gb.rotation.set(0.35, 0, -0.5)
   gb.castShadow = true
   group.add(gb)
   const duct = new THREE.Mesh(
     new THREE.TubeGeometry(
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0.24, -0.62, 0.3),
-        new THREE.Vector3(0.18, -0.3, 0.24),
-        new THREE.Vector3(0.1, -0.12, 0.16)
-      ]), 16, 0.035, 8),
+        new THREE.Vector3(0.24, -0.52, 0.24),
+        new THREE.Vector3(0.18, -0.36, 0.2),
+        new THREE.Vector3(0.12, -0.2, 0.14)
+      ]), 14, 0.032, 8),
     new THREE.MeshStandardMaterial({ color: '#7fae6a', roughness: 0.5 })
   )
   group.add(duct)
@@ -295,24 +295,30 @@ export function buildHeart() {
   const pulm = new THREE.Mesh(
     new THREE.TubeGeometry(
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0.1, 0.5, 0.18),
-        new THREE.Vector3(-0.1, 0.86, 0.16),
-        new THREE.Vector3(-0.42, 0.94, 0.08),
-        new THREE.Vector3(-0.52, 0.72, 0.0)
-      ]), 42, 0.085, 14),
+        new THREE.Vector3(0.08, 0.5, 0.2),
+        new THREE.Vector3(-0.06, 0.74, 0.16),
+        new THREE.Vector3(-0.26, 0.8, 0.08)
+      ]), 36, 0.082, 14),
     vesselMat('#5a76a8')
   )
 
   const cav = new THREE.Mesh(
     new THREE.TubeGeometry(
       new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0.4, 1.1, -0.12),
-        new THREE.Vector3(0.42, 0.76, -0.16),
-        new THREE.Vector3(0.3, 0.52, -0.06)
-      ]), 28, 0.07, 12),
+        new THREE.Vector3(0.33, 1.02, -0.08),
+        new THREE.Vector3(0.36, 0.68, -0.12),
+        new THREE.Vector3(0.3, 0.5, -0.05)
+      ]), 24, 0.06, 12),
     vesselMat('#7a5a72')
   )
-  group.add(aorta, pulm, cav)
+  /* rounded end caps so the vessels don't read as open tubes */
+  const capA = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 10), vesselMat('#b0474e'))
+  capA.position.set(0.5, 0.62, -0.12)
+  const capP = new THREE.Mesh(new THREE.SphereGeometry(0.078, 14, 10), vesselMat('#5a76a8'))
+  capP.position.set(-0.26, 0.8, 0.08)
+  const capC = new THREE.Mesh(new THREE.SphereGeometry(0.058, 14, 10), vesselMat('#7a5a72'))
+  capC.position.set(0.33, 1.02, -0.08)
+  group.add(aorta, pulm, cav, capA, capP, capC)
 
   group.userData.tick = (t) => {
     const beat = 1 + Math.sin(t * 2.6) * 0.011 + Math.max(0, Math.sin(t * 2.6 - 0.55)) * 0.02
