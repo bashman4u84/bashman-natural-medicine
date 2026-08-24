@@ -67,7 +67,7 @@ export const RECIPES = {
 
   kidney: {
     palette: {
-      base: [0.44, 0.19, 0.14], dark: [0.3, 0.11, 0.09], light: [0.56, 0.27, 0.19],
+      base: [0.4, 0.16, 0.12], dark: [0.27, 0.09, 0.075], light: [0.52, 0.24, 0.17],
       grain: 0.3, speckle: 0.1
     },
     color(u, v, l, m, c2) {
@@ -86,7 +86,7 @@ export const RECIPES = {
 
   heart: {
     palette: {
-      base: [0.42, 0.07, 0.09], dark: [0.26, 0.03, 0.045], light: [0.56, 0.11, 0.11],
+      base: [0.38, 0.06, 0.08], dark: [0.23, 0.025, 0.04], light: [0.52, 0.1, 0.1],
       grain: 0.32, speckle: 0.14
     },
     color(u, v, l, m, c2) {
