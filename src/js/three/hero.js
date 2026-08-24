@@ -114,7 +114,7 @@ function leafMap(tone = '#4d8a5c') {
 function phys(opts) {
   return new THREE.MeshPhysicalMaterial({
     roughness: 0.4, clearcoat: 0.4, clearcoatRoughness: 0.55,
-    sheen: 0.4, envMapIntensity: 0.85, ...opts
+    sheen: 0.45, envMapIntensity: 1.1, ...opts
   })
 }
 
@@ -250,7 +250,7 @@ const BUILDERS = {
 
 /* ---------- the drift parade ---------- */
 const PARADE = [
-  { key: 'pomegranate', n: 1, scale: 0.46 },
+  { key: 'pomegranate', n: 1, scale: 0.4 },
   { key: 'leaf', n: 4, scale: 0.3 },
   { key: 'date', n: 2, scale: 0.2 },
   { key: 'date-seed', n: 2, scale: 0.15 },
@@ -265,7 +265,7 @@ export function initHero(canvas) {
   const stage = initStage(canvas, { fov: 42, camPos: [0, 0.1, 5.4], shadows: false, exposure: 0.98 })
   const { scene, camera } = stage
   studioLights(scene)
-  const frontKey = new THREE.DirectionalLight('#ffdcae', 1.1)
+  const frontKey = new THREE.DirectionalLight('#ffdcae', 1.35)
   frontKey.position.set(-1.6, 1.4, 3.4)
   scene.add(frontKey)
 
@@ -299,7 +299,9 @@ export function initHero(canvas) {
 
   for (const def of PARADE) {
     for (let i = 0; i < def.n; i++) {
-      const laneName = ['bottom', 'top', 'band', 'front', 'bottom', 'top'][slot % 6]
+      const laneName = def.key === 'pomegranate'
+        ? 'bottom'
+        : ['bottom', 'top', 'band', 'front', 'bottom', 'top'][slot % 6]
       slot++
       const lane = lanes[laneName]
       drifters.push({
