@@ -254,7 +254,7 @@ const BUILDERS = {
  * for motion. The copy lives on the left; the arrangement on the
  * right. Nothing chases the frame. */
 const STILL_LIFE = [
-  { key: 'pomegranate', pos: [1.85, -0.05, 0.25], scale: 0.64, spin: 0.1, tilt: [-0.1, 3.05, 0.06] },
+  { key: 'pomegranate', pos: [1.85, -0.05, 0.25], scale: 0.64, spin: 0.012, tilt: [-0.1, 3.05, 0.06] },
   { key: 'leaf', pos: [1.35, 0.8, -0.35], scale: 0.42, tilt: [0.4, -0.7, -0.3] },
   { key: 'leaf', pos: [2.7, 0.6, -0.5], scale: 0.35, tilt: [-0.3, 0.4, 0.2] },
   { key: 'leaf', pos: [2.6, -0.75, 0.2], scale: 0.32, tilt: [0.2, 0.9, 0.4] },
@@ -307,7 +307,7 @@ export function initHero(canvas) {
   slabGroup.position.set(mobile0 ? 0.95 : 1.9, mobile0 ? -2.05 : -1.2, 0.12)
   scene.add(slabGroup)
 
-  const clusterKey = new THREE.PointLight('#ffca7a', 4, 9, 2)
+  const clusterKey = new THREE.PointLight('#ffca7a', 2.6, 9, 2)
   clusterKey.position.set(2.0, 1.1, 1.8)
   scene.add(clusterKey)
 
@@ -390,9 +390,10 @@ export function initHero(canvas) {
     dust.position.y = -scrollP * 0.5
     halo.material.opacity = 0.13 * (1 - scrollP * 0.6)
 
-    camera.position.x = 1.9 + mx * 0.22
-    camera.position.y = 0.08 - my * 0.16 + scrollP * 0.3
-    camera.lookAt(1.86, 0.2 + scrollP * 0.9, 0)
+    const mview = typeof innerWidth !== 'undefined' && innerWidth < 900
+    camera.position.x = (mview ? 0.85 : 1.9) + mx * (mview ? 0.14 : 0.22)
+    camera.position.y = (mview ? 0.0 : 0.08) - my * 0.16 + scrollP * 0.3
+    camera.lookAt(mview ? 0.85 : 1.86, (mview ? -0.42 : 0.2) + scrollP * 0.9, 0)
   })
 
   return {
