@@ -254,7 +254,7 @@ const BUILDERS = {
  * for motion. The copy lives on the left; the arrangement on the
  * right. Nothing chases the frame. */
 const STILL_LIFE = [
-  { key: 'pomegranate', pos: [1.85, -0.05, 0.25], scale: 0.6, spin: 0.1 },
+  { key: 'pomegranate', pos: [1.85, -0.05, 0.25], scale: 0.64, spin: 0.1, tilt: [-0.15, 2.35, 0.08] },
   { key: 'leaf', pos: [1.35, 0.8, -0.35], scale: 0.42, tilt: [0.4, -0.7, -0.3] },
   { key: 'leaf', pos: [2.7, 0.6, -0.5], scale: 0.35, tilt: [-0.3, 0.4, 0.2] },
   { key: 'leaf', pos: [2.6, -0.75, 0.2], scale: 0.32, tilt: [0.2, 0.9, 0.4] },
@@ -286,6 +286,10 @@ export function initHero(canvas) {
   halo.scale.setScalar(5.4)
   halo.position.set(2.0, 0, -2.2)
   scene.add(halo)
+
+  const clusterKey = new THREE.PointLight('#ffca7a', 7, 9, 2)
+  clusterKey.position.set(2.0, 1.1, 1.8)
+  scene.add(clusterKey)
 
   const dust = driftPoints({ count: IS_TOUCH ? 36 : 70, colors: ['#e8c96a', '#f4dc9a', '#ffd97a'], size: 0.045, rMin: 1.6, rMax: 3.4 })
   scene.add(dust)
