@@ -352,7 +352,7 @@ export function initHero(canvas) {
 
     for (const d of drifters) {
       if (!d.wrap) continue
-      d.wrap.position.x = d.x + ((t * d.drift + 1.2) % 7.6) - 3.8
+      d.wrap.position.x = d.drift > 0 ? d.x + ((t * d.drift + 1.2) % 7.6) - 3.8 : d.x
       d.wrap.position.y = d.y + Math.sin(t * d.bobF * TAU + d.phase) * d.bobA
       d.wrap.rotation.x = d.tilt[0] + Math.sin(t * 0.12 + d.phase) * 0.14
       d.wrap.rotation.y = d.tilt[1] + t * d.rotS
