@@ -334,7 +334,7 @@ export function initHero(canvas) {
           d.obj = obj
           if (!window.__hero3dAt) window.__hero3dAt = performance.now()
         })
-        .catch(() => {})
+        .catch((e) => console.error('[hero:ingredient ' + d.key + ']', e))
     }
   }
 
