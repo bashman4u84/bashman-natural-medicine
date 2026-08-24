@@ -24,8 +24,8 @@ function fieldNoise(seed, amp, freq) {
 /* The rind: body sphere, hollowed, with a tilted opening cut */
 function rindField() {
   const bodyNoise = fieldNoise(101, 0.02, 2.2)
-  const cutShape = (q) => op.at(q, SDF.roundBox([0.55, 0.45, 0.42], 0.03), {
-    tx: 0.0, ty: 0.62, tz: 0.66, rx: -0.6
+  const cutShape = (q) => op.at(q, SDF.roundBox([0.5, 0.42, 0.38], 0.03), {
+    tx: 0.0, ty: 0.68, tz: 0.62, rx: -0.55
   })
   const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
   const tipShape = (q) => op.at(q, SDF.sphere(0.3), { ty: 1.02 }) // calyx base bulge
@@ -43,7 +43,7 @@ function rindField() {
 
 /* interior flesh dome the arils sit on */
 function fleshField() {
-  const dome = (q) => op.at(q, SDF.sphere(0.84), { ty: -0.26 })
+  const dome = (q) => op.at(q, SDF.sphere(0.72), { ty: -0.42 })
   return (p) => {
     const n = fieldNoise(103, 0.012, 2.6)(p)
     return dome(p) + n
@@ -120,8 +120,9 @@ export function initHero(canvas, _opts = {}) {
   const cutAxis = new THREE.Vector3(0, Math.cos(0.75), Math.sin(0.75)).normalize() // opening normal
   const right = new THREE.Vector3(1, 0, 0)
   const up = new THREE.Vector3().crossVectors(cutAxis, right).normalize()
-  const domeC = new THREE.Vector3(0, -0.26, 0)
-  const domeR = 0.84
+  const domeC = new THREE.Vector3(0, domeCY, 0)
+  const domeR = 0.72
+  const domeCY = -0.42
   let seedI = 0
   const rand = () => {
     seedI = (seedI * 16807) % 2147483647
@@ -156,7 +157,7 @@ export function initHero(canvas, _opts = {}) {
   innerLight.position.set(0, 0.35, 0.55)
   scene.add(innerLight)
   const ember = new THREE.Mesh(
-    new THREE.CircleGeometry(0.3, 32),
+    new THREE.CircleGeometry(0.24, 32),
     new THREE.MeshBasicMaterial({
       map: glowTexture('rgba(255,180,90,1)', 'rgba(255,120,60,0)'),
       transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending,
@@ -205,7 +206,7 @@ export function initHero(canvas, _opts = {}) {
 
   /* dedicated front key: the studio key rakes from above-right and
    * leaves the camera-facing flank dark — this lifts the fruit's face */
-  const frontKey = new THREE.DirectionalLight('#ffe6bd', 2.4)
+  const frontKey = new THREE.DirectionalLight('#ffe6bd', 1.5)
   frontKey.position.set(-1.6, 1.4, 3.4)
   scene.add(frontKey)
 
