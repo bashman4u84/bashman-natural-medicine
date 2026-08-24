@@ -168,7 +168,7 @@ export const RECIPES = {
       let col = mix(this.palette.base, this.palette.dark, Math.max(0, l) * 0.6 + Math.max(0, m) * 0.25)
       col = mix(col, this.palette.light, Math.max(0, -l) * 0.45)
       col = mix(col, [0.72, 0.22, 0.2], Math.max(0, -m - c2 * 0.5) * 0.3)
-      col = mix(col, [0.8, 0.44, 0.34], Math.min(0.3, Math.max(0, c2 - 0.45) * 0.7))
+      col = mix(col, [0.72, 0.36, 0.28], Math.min(0.14, Math.max(0, c2 - 0.5) * 0.5))
       return col
     },
     bump(u, v, l, m, c2) {

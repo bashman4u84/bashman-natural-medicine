@@ -304,7 +304,7 @@ export function initHero(canvas) {
   const slabGroup = new THREE.Group()
   slabGroup.add(slabRim, slab)
   const mobile0 = typeof innerWidth !== 'undefined' && innerWidth < 900
-  slabGroup.position.set(mobile0 ? 0.95 : 1.9, mobile0 ? -2.05 : -1.2, 0.12)
+  slabGroup.position.set(mobile0 ? 0.95 : 1.9, mobile0 ? -2.18 : -1.2, 0.12)
   scene.add(slabGroup)
 
   const clusterKey = new THREE.PointLight('#ffca7a', 2.6, 9, 2)
@@ -321,13 +321,14 @@ export function initHero(canvas) {
   const rand = rng(4242)
   const mobile = (typeof innerWidth !== 'undefined' && innerWidth < 900)
   for (const def of STILL_LIFE) {
+    if (mobile && def.drift) continue
     const p = def.pos
     drifters.push({
       key: def.key,
       builder: BUILDERS[def.key],
-      scale: def.scale,
-      x: mobile ? p[0] * 0.5 : p[0],
-      y: mobile ? p[1] - 0.85 : p[1],
+      scale: def.scale * (mobile ? 0.85 : 1),
+      x: mobile ? 0.95 + (p[0] - 1.9) * 0.46 : p[0],
+      y: mobile ? p[1] * 0.5 - 1.25 : p[1],
       z: p[2],
       drift: def.drift || 0,
       tilt: def.tilt || [0, 0, 0],
