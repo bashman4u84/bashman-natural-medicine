@@ -120,9 +120,9 @@ export function initHero(canvas, _opts = {}) {
   const cutAxis = new THREE.Vector3(0, Math.cos(0.75), Math.sin(0.75)).normalize() // opening normal
   const right = new THREE.Vector3(1, 0, 0)
   const up = new THREE.Vector3().crossVectors(cutAxis, right).normalize()
-  const domeC = new THREE.Vector3(0, domeCY, 0)
   const domeR = 0.72
   const domeCY = -0.42
+  const domeC = new THREE.Vector3(0, domeCY, 0)
   let seedI = 0
   const rand = () => {
     seedI = (seedI * 16807) % 2147483647
