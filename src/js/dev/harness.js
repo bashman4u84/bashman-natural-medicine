@@ -4,6 +4,8 @@ import { makeOrgan } from '../three/organs.js'
 import { CONDITIONS } from '../data/conditions.js'
 import { initHero } from '../three/hero.js'
 
+window.addEventListener('unhandledrejection', (e) => { document.getElementById('info').textContent = 'REJECTION: ' + (e.reason && e.reason.message || e.reason); console.error('[rejection]', e.reason) })
+
 const params = new URLSearchParams(location.search)
 const heroMode = params.get('hero') === '1'
 const organ = params.get('organ') || 'liver'
