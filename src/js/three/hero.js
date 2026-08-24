@@ -269,9 +269,11 @@ const STILL_LIFE = [
 ]
 
 export function initHero(canvas) {
-  const stage = initStage(canvas, { fov: 40, camPos: [1.9, 0.05, 5.7], shadows: false, exposure: 0.98 })
+  const stage = initStage(canvas, { fov: 40, camPos: [1.9, 0.05, 5.7], shadows: false, exposure: 1.0 })
   const { scene, camera } = stage
-  studioLights(scene)
+  const rig = studioLights(scene)
+  rig.rim.intensity = 0.7
+  rig.under.intensity = 0.22
   const frontKey = new THREE.DirectionalLight('#ffdcae', 1.6)
   frontKey.position.set(-1.6, 1.4, 3.4)
   scene.add(frontKey)
@@ -279,19 +281,37 @@ export function initHero(canvas) {
   /* soft ember far behind the garden */
   const halo = new THREE.Sprite(
     new THREE.SpriteMaterial({
-      map: glowTexture('rgba(232,201,106,0.55)'),
-      transparent: true, opacity: 0.13, depthWrite: false, blending: THREE.AdditiveBlending
+      map: glowTexture('rgba(255,243,214,0.95)'),
+      transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending
     })
   )
-  halo.scale.setScalar(5.4)
-  halo.position.set(2.0, 0, -2.2)
+  halo.scale.setScalar(5.2)
+  halo.position.set(2.05, 0.05, -2.3)
   scene.add(halo)
+
+  /* pedestal slab — a light stone disc grounds the still-life */
+  const slabRim = new THREE.Mesh(
+    new THREE.CircleGeometry(1.5, 72),
+    new THREE.MeshStandardMaterial({ color: '#d8cbb0', roughness: 0.95 })
+  )
+  slabRim.rotation.x = -Math.PI / 2
+  const slab = new THREE.Mesh(
+    new THREE.CircleGeometry(1.36, 72),
+    new THREE.MeshStandardMaterial({ color: '#f0e8d5', roughness: 0.85 })
+  )
+  slab.rotation.x = -Math.PI / 2
+  slab.position.y = 0.012
+  const slabGroup = new THREE.Group()
+  slabGroup.add(slabRim, slab)
+  const mobile0 = typeof innerWidth !== 'undefined' && innerWidth < 900
+  slabGroup.position.set(mobile0 ? 0.95 : 1.9, mobile0 ? -2.05 : -1.2, 0.12)
+  scene.add(slabGroup)
 
   const clusterKey = new THREE.PointLight('#ffca7a', 4, 9, 2)
   clusterKey.position.set(2.0, 1.1, 1.8)
   scene.add(clusterKey)
 
-  const dust = driftPoints({ count: IS_TOUCH ? 36 : 70, colors: ['#e8c96a', '#f4dc9a', '#ffd97a'], size: 0.045, rMin: 1.6, rMax: 3.4 })
+  const dust = driftPoints({ count: IS_TOUCH ? 30 : 60, colors: ['#c9a227', '#3fa372', '#c9a227'], size: 0.04, rMin: 1.6, rMax: 3.4 })
   scene.add(dust)
 
   /* the arrangement */
