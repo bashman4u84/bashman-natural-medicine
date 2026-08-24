@@ -377,6 +377,7 @@ export function initHero(canvas) {
     camera.lookAt(0, 0.24 + scrollP * 0.9, 0)
   })
 
+  window.__heroFlow = drifters
   return {
     setScroll(p) { scrollP = p },
     dispose: stage.dispose
