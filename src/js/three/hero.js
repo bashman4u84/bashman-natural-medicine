@@ -217,8 +217,8 @@ export function initHero(canvas, _opts = {}) {
   /* ---------- float animation ---------- */
   const pivot = new THREE.Group()
   pivot.add(rind, flesh, arils, crown, glowSprite(glowTexture('rgba(255,150,90,0.8)'), 0.5, 1.1))
-  pivot.scale.setScalar(1.12)
-  pivot.position.y = -0.06
+  pivot.scale.setScalar(1.05)
+  pivot.position.y = -0.62
   scene.add(pivot)
 
   let scrollP = 0
@@ -258,8 +258,8 @@ export function initHero(canvas, _opts = {}) {
     dust.position.y = -scrollP * 0.6
 
     camera.position.x = mx * 0.5
-    camera.position.y = 0.12 - my * 0.36 + scrollP * 0.3
-    camera.lookAt(0, scrollP * 0.9, 0)
+    camera.position.y = 0.1 - my * 0.36 + scrollP * 0.3
+    camera.lookAt(0, 0.28 + scrollP * 0.9, 0)
   })
 
   return {
