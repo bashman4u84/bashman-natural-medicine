@@ -24,7 +24,7 @@ function fieldNoise(seed, amp, freq) {
 /* The rind: body sphere, hollowed, with a tilted opening cut */
 function rindField() {
   const bodyNoise = fieldNoise(101, 0.02, 2.2)
-  const cutShape = op.at((q) => q, SDF.roundBox([0.52, 0.42, 0.42], 0.03), {
+  const cutShape = (q) => op.at(q, SDF.roundBox([0.52, 0.42, 0.42], 0.03), {
     tx: 0.0, ty: 0.88, tz: 0.5, rx: -0.62
   })
   const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
