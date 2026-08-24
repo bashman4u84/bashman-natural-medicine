@@ -24,8 +24,8 @@ function fieldNoise(seed, amp, freq) {
 /* The rind: body sphere, hollowed, with a tilted opening cut */
 function rindField() {
   const bodyNoise = fieldNoise(101, 0.02, 2.2)
-  const cutShape = (q) => op.at(q, SDF.roundBox([0.62, 0.55, 0.5], 0.03), {
-    tx: 0.0, ty: 0.5, tz: 0.8, rx: -0.75
+  const cutShape = (q) => op.at(q, SDF.roundBox([0.55, 0.45, 0.42], 0.03), {
+    tx: 0.0, ty: 0.62, tz: 0.66, rx: -0.6
   })
   const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
   const tipShape = (q) => op.at(q, SDF.sphere(0.3), { ty: 1.02 }) // calyx base bulge
@@ -130,7 +130,7 @@ export function initHero(canvas, _opts = {}) {
   for (let i = 0; i < 74; i++) {
     // arils hug the exposed dome cap, angled toward the opening
     const a = rand() * Math.PI * 2
-    const capAng = Math.acos(1 - rand() * 0.55) // up to ~52° off the opening axis
+    const capAng = Math.acos(1 - rand() * 0.66) // up to ~62° off the opening axis
     const dir = cutAxis
       .clone()
       .multiplyScalar(Math.cos(capAng))
@@ -156,15 +156,15 @@ export function initHero(canvas, _opts = {}) {
   innerLight.position.set(0, 0.35, 0.55)
   scene.add(innerLight)
   const ember = new THREE.Mesh(
-    new THREE.CircleGeometry(0.42, 32),
+    new THREE.CircleGeometry(0.3, 32),
     new THREE.MeshBasicMaterial({
       map: glowTexture('rgba(255,180,90,1)', 'rgba(255,120,60,0)'),
-      transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending,
+      transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending,
       depthWrite: false, side: THREE.DoubleSide
     })
   )
-  ember.position.set(0, 0.24, 0.42)
-  ember.rotation.x = -0.75
+  ember.position.set(0, 0.28, 0.46)
+  ember.rotation.x = -0.6
   ember.visible = S('sprites')
   scene.add(ember)
   const glowSpark = new THREE.Sprite(
@@ -205,7 +205,7 @@ export function initHero(canvas, _opts = {}) {
 
   /* dedicated front key: the studio key rakes from above-right and
    * leaves the camera-facing flank dark — this lifts the fruit's face */
-  const frontKey = new THREE.DirectionalLight('#ffe6bd', 1.9)
+  const frontKey = new THREE.DirectionalLight('#ffe6bd', 2.4)
   frontKey.position.set(-1.6, 1.4, 3.4)
   scene.add(frontKey)
 
@@ -243,7 +243,7 @@ export function initHero(canvas, _opts = {}) {
     arils.scale.setScalar(breathe)
 
     innerLight.intensity = 2.2 + Math.sin(t * 1.6) * 0.8 + scrollP * 1.5
-    ember.material.opacity = 0.45 + Math.sin(t * 1.3) * 0.1 + scrollP * 0.2
+    ember.material.opacity = 0.32 + Math.sin(t * 1.3) * 0.07 + scrollP * 0.2
     glowSpark.material.opacity = 0.26 + Math.sin(t * 1.3) * 0.08 + scrollP * 0.3
 
     rings.forEach((r, i) => {

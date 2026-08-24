@@ -63,7 +63,7 @@ function organic(seed, amp, freq) {
 
 /* pomegranate — mirror of hero.js fields */
 const pomRind = (p) => {
-  const cutShape = (q) => op.at(q, SDF.roundBox([0.62, 0.55, 0.5], 0.03), { tx: 0.0, ty: 0.5, tz: 0.8, rx: -0.75 })
+  const cutShape = (q) => op.at(q, SDF.roundBox([0.55, 0.45, 0.42], 0.03), { tx: 0.0, ty: 0.62, tz: 0.66, rx: -0.6 })
   const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
   const tipShape = (q) => op.at(q, SDF.sphere(0.3), { ty: 1.02 })
   const noise = organic(101, 0.02, 2.2)
