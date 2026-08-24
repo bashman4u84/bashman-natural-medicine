@@ -52,8 +52,10 @@ function fleshField() {
 
 const _v = new THREE.Vector3()
 
-export function initHero(canvas) {
-  const stage = initStage(canvas, { fov: 42, camPos: [0, 0.12, 4.7], shadows: false, exposure: 1.02 })
+export function initHero(canvas, _opts = {}) {
+  const fx = new URLSearchParams(location.search).get('fx') || 'full'
+  const S = (flag) => fx === 'full' || fx === flag
+  const stage = initStage(canvas, { fov: 42, camPos: [0, 0.12, 4.7], shadows: false, exposure: 0.98 })
   const { scene, camera } = stage
   studioLights(scene)
 
@@ -124,17 +126,18 @@ export function initHero(canvas) {
   scene.add(arils)
 
   /* ---------- the glowing heart of the fruit ---------- */
-  const innerLight = new THREE.PointLight('#ffb14e', 30, 9, 2)
+  const innerLight = new THREE.PointLight('#ffb14e', 20, 9, 2)
   innerLight.position.set(0, 0.35, 0.55)
   scene.add(innerLight)
   const glowSpark = new THREE.Sprite(
     new THREE.SpriteMaterial({
       map: glowTexture('rgba(255,190,110,0.9)'),
-      transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending
+      transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending
     })
   )
-  glowSpark.scale.setScalar(2.2)
-  glowSpark.position.set(0, 0.42, 0.4)
+  glowSpark.scale.setScalar(0.9)
+  glowSpark.position.set(0, 0.42, 0.5)
+  glowSpark.visible = S('sprites')
   scene.add(glowSpark)
 
   /* ---------- orbit rings + gold dust ---------- */
@@ -156,11 +159,14 @@ export function initHero(canvas) {
       transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending
     })
   )
-  halo.scale.setScalar(7.2)
-  halo.position.z = -1.2
+  halo.scale.setScalar(6)
+  halo.position.z = -1.8
+  halo.material.opacity = 0.1
+  halo.visible = S('sprites')
   scene.add(halo)
 
   const dust = driftPoints({ count: IS_TOUCH ? 40 : 80, colors: ['#e8c96a', '#f4dc9a', '#ffd97a'], size: 0.05, rMin: 1.5, rMax: 3.2 })
+  dust.visible = S('points')
   scene.add(dust)
 
   /* ---------- float animation ---------- */
@@ -190,8 +196,8 @@ export function initHero(canvas) {
     flesh.scale.setScalar(breathe)
     arils.scale.setScalar(breathe)
 
-    innerLight.intensity = 24 + Math.sin(t * 1.6) * 6 + scrollP * 10
-    glowSpark.material.opacity = 0.42 + Math.sin(t * 1.3) * 0.1 + scrollP * 0.3
+    innerLight.intensity = 16 + Math.sin(t * 1.6) * 5 + scrollP * 10
+    glowSpark.material.opacity = 0.26 + Math.sin(t * 1.3) * 0.08 + scrollP * 0.3
 
     rings.forEach((r, i) => {
       r.rotation.z += dt * (i === 0 ? 0.09 : -0.055)
