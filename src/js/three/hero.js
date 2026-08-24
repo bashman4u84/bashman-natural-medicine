@@ -166,7 +166,6 @@ const BUILDERS = {
       emissive: new THREE.Color('#7a0d2c'), emissiveIntensity: 0.45, envMapIntensity: 1.2
     }))
     g.add(rind, flesh, arils)
-    window.__pomParts = { rind, flesh, arils }
     return g
   },
 
