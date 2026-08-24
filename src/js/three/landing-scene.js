@@ -13,8 +13,10 @@ export function initLandingScene(canvas, { organ = 'liver', bad = 'virus', badCo
   healLight.position.set(-0.8, 0.6, 1.4)
   scene.add(inflameLight, healLight)
 
-  const group = makeOrgan(organ)
-  scene.add(group)
+  let group = null
+  makeOrgan(organ).then((g) => {
+    if (g) { group = g; scene.add(g) }
+  })
 
   const badTex = bad === 'virus' ? virusTexture(badColor) : dropTexture(badColor)
   const swarm = billboardSwarm({
@@ -36,10 +38,12 @@ export function initLandingScene(canvas, { organ = 'liver', bad = 'virus', badCo
   stage.setRender((dt, t) => {
     p += (targetP - p) * Math.min(dt * 6, 1)
 
-    group.rotation.y += dt * 0.28
-    group.position.y = Math.sin(t * 0.8) * 0.07
-    const settle = 1 - Math.sin(p * Math.PI) * 0.04
-    group.scale.setScalar(settle)
+    if (group) {
+      group.rotation.y += dt * 0.28
+      group.position.y = Math.sin(t * 0.8) * 0.07
+      const settle = 1 - Math.sin(p * Math.PI) * 0.04
+      group.scale.setScalar(settle)
+    }
 
     swarm.userData.tick(t)
     swarm.children.forEach((s) => {

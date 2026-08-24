@@ -105,31 +105,23 @@ export function initScienceViewer(canvas, hotspotLayer) {
     })
   }
 
+  let buildToken = 0
   function setOrgan(key, hotspotsList, onHotspotOpen) {
     if (key === currentKey) return
     currentKey = key
     clearHotspots()
+    const token = ++buildToken
     const buildNext = () => {
       if (current) {
         scene.remove(current)
         disposeGroup(current)
         current = null
       }
-      const next = makeOrgan(key)
-      next.traverse((o) => {
-        if (o.isMesh) o.castShadow = true
+      makeOrgan(key).then((built) => {
+        if (token !== buildToken || !built) return
+        scene.add(built)
+        attachOrgan(built, hotspotsList, onHotspotOpen)
       })
-      /* measure the final (animated) bounds BEFORE starting the
-       * intro animation, so the camera frames the real organ */
-      next.position.y = 0.4
-      next.updateWorldMatrix(true, true)
-      frameObject(next)
-      next.scale.setScalar(0.001)
-      scene.add(next)
-      current = next
-      gsap.to(next.scale, { x: 1, y: 1, z: 1, duration: 0.9, ease: 'elastic.out(1, 0.75)' })
-      gsap.to(next.position, { y: 0, duration: 0.9, ease: 'power3.out' })
-      if (hotspotsList) setTimeout(() => setHotspots(hotspotsList, onHotspotOpen), 700)
     }
     if (current) {
       gsap.to(current.scale, {
@@ -140,6 +132,22 @@ export function initScienceViewer(canvas, hotspotLayer) {
     } else {
       buildNext()
     }
+  }
+  function attachOrgan(next, hotspotsList, onHotspotOpen) {
+      if (!window.__organ3dAt) window.__organ3dAt = performance.now()
+      next.traverse((o) => {
+        if (o.isMesh) o.castShadow = true
+      })
+      /* measure the final (animated) bounds BEFORE starting the
+       * intro animation, so the camera frames the real organ */
+      next.position.y = 0.4
+      next.updateWorldMatrix(true, true)
+      frameObject(next)
+      next.scale.setScalar(0.001)
+      current = next
+      gsap.to(next.scale, { x: 1, y: 1, z: 1, duration: 0.9, ease: 'elastic.out(1, 0.75)' })
+      gsap.to(next.position, { y: 0, duration: 0.9, ease: 'power3.out' })
+      if (hotspotsList) setTimeout(() => setHotspots(hotspotsList, onHotspotOpen), 700)
   }
 
   function zoom(dir) {

@@ -88,8 +88,9 @@ export const SDF = {
     const k1 = Math.hypot(p[0] / (r[0] * r[0]), p[1] / (r[1] * r[1]), p[2] / (r[2] * r[2]))
     // iq's approximation degenerates to ~0 at the center (spurious iso
     // shells inside the volume) — clamp the interior so it stays negative.
-    const d = (k0 * (k0 - 1)) / k1
     const rmin = Math.min(r[0], r[1], r[2]) * 0.6
+    if (k1 < 1e-12) return -rmin
+    const d = (k0 * (k0 - 1)) / k1
     return Math.max(d, -rmin)
   },
 

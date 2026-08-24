@@ -43,7 +43,7 @@ if (heroMode) {
   window.__organReady = true
   document.getElementById('info').textContent = 'hero mode'
 } else {
-  const group = makeOrgan(organ)
+  makeOrgan(organ).then((group) => {
   scene.add(group)
   group.position.y += 0.1
 
@@ -73,5 +73,6 @@ if (heroMode) {
     group.rotation.y += 0.0035
     group.userData?.tick?.(performance.now() / 1000)
     renderer.render(scene, camera)
+  })
   })
 }

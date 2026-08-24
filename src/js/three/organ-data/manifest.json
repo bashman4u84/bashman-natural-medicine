@@ -1,0 +1,96 @@
+{
+  "liver": {
+    "parts": [
+      "main"
+    ],
+    "size": 242
+  },
+  "stomach": {
+    "parts": [
+      "main"
+    ],
+    "size": 248
+  },
+  "kidneys": {
+    "parts": [
+      "main"
+    ],
+    "size": 266
+  },
+  "heart": {
+    "parts": [
+      "main"
+    ],
+    "size": 248
+  },
+  "pancreas": {
+    "parts": [
+      "main"
+    ],
+    "size": 100
+  },
+  "intestines": {
+    "parts": [
+      "main"
+    ],
+    "size": 313
+  },
+  "pomegranate": {
+    "parts": [
+      "rind",
+      "flesh",
+      "arils"
+    ],
+    "size": 3
+  },
+  "date": {
+    "parts": [
+      "main"
+    ],
+    "size": 96
+  },
+  "leaf": {
+    "parts": [
+      "main"
+    ],
+    "size": 161
+  },
+  "date-seed": {
+    "parts": [
+      "main"
+    ],
+    "size": 21
+  },
+  "bee": {
+    "parts": [
+      "body",
+      "wings"
+    ],
+    "size": 90
+  },
+  "ginger": {
+    "parts": [
+      "main"
+    ],
+    "size": 128
+  },
+  "garlic": {
+    "parts": [
+      "bulb",
+      "sprout"
+    ],
+    "size": 101
+  },
+  "turmeric": {
+    "parts": [
+      "main"
+    ],
+    "size": 88
+  },
+  "honey": {
+    "parts": [
+      "main"
+    ],
+    "size": 1
+  }
+}
