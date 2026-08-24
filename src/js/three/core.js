@@ -91,7 +91,7 @@ export function initStage(canvas, opts = {}) {
     renderer.dispose()
   }
 
-  return { renderer, scene, camera, clock, setRender, dispose }
+  return { renderer, scene, camera, setRender, dispose }
 }
 
 export function studioLights(scene, { shadows = false } = {}) {
