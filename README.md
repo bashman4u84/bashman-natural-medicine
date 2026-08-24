@@ -58,7 +58,9 @@ Deploy `dist/` to any static host (Netlify, Vercel, Cloudflare Pages, GitHub Pag
         ├── dev/harness.js  # dev-only organ/hero viewer (devtest.html)
         └── pages/*.js      # per-page entry scripts
 ```
-`devtest.html` is a local dev tool (not part of the build) — run `npm run dev` and open `/devtest.html?organ=heart` (or `?hero=1`) to inspect any 3D asset. `tools/preview.mjs` renders a CPU ray-traced preview of the SDF fields without a browser: `node tools/preview.mjs liver`.
+`devtest.html` is a local dev tool (not part of the build) — run `npm run dev` and open `/devtest.html?organ=heart` (or `?hero=1`) to inspect any 3D asset.
+
+**After changing any organ/ingredient shape, regenerate the lazy-loaded 3D chunks:** `npm run bake` (bakes `src/js/three/organ-data/*.js` — the browser never sculpts at runtime; this is what keeps the 3D pages fast). `tools/preview.mjs` renders a CPU ray-traced preview of the SDF fields without a browser: `node tools/preview.mjs liver`.
 
 ## Disclaimer
 
