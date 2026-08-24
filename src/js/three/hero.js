@@ -254,7 +254,7 @@ const BUILDERS = {
  * for motion. The copy lives on the left; the arrangement on the
  * right. Nothing chases the frame. */
 const STILL_LIFE = [
-  { key: 'pomegranate', pos: [1.85, -0.05, 0.25], scale: 0.64, spin: 0.1, tilt: [-0.15, 2.35, 0.08] },
+  { key: 'pomegranate', pos: [1.85, -0.05, 0.25], scale: 0.64, spin: 0.1, tilt: [-0.1, 3.05, 0.06] },
   { key: 'leaf', pos: [1.35, 0.8, -0.35], scale: 0.42, tilt: [0.4, -0.7, -0.3] },
   { key: 'leaf', pos: [2.7, 0.6, -0.5], scale: 0.35, tilt: [-0.3, 0.4, 0.2] },
   { key: 'leaf', pos: [2.6, -0.75, 0.2], scale: 0.32, tilt: [0.2, 0.9, 0.4] },
