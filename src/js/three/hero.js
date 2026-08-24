@@ -217,8 +217,8 @@ export function initHero(canvas, _opts = {}) {
   /* ---------- float animation ---------- */
   const pivot = new THREE.Group()
   pivot.add(rind, flesh, arils, crown, glowSprite(glowTexture('rgba(255,150,90,0.8)'), 0.5, 1.1))
-  pivot.scale.setScalar(1.05)
-  pivot.position.y = -0.62
+  pivot.scale.setScalar(0.93)
+  pivot.position.y = -0.78
   scene.add(pivot)
 
   let scrollP = 0
@@ -236,7 +236,7 @@ export function initHero(canvas, _opts = {}) {
 
     pivot.rotation.y += dt * 0.16
     pivot.rotation.x = Math.sin(t * 0.21) * 0.05
-    pivot.position.y = -0.6 + Math.sin(t * 0.75) * 0.06 - scrollP * 0.5
+    pivot.position.y = -0.78 + Math.sin(t * 0.75) * 0.06 - scrollP * 0.5
 
     const breathe = 1 + Math.sin(t * 0.85) * 0.012
     rind.scale.setScalar(breathe)
@@ -259,7 +259,7 @@ export function initHero(canvas, _opts = {}) {
 
     camera.position.x = mx * 0.5
     camera.position.y = 0.1 - my * 0.36 + scrollP * 0.3
-    camera.lookAt(0, 0.28 + scrollP * 0.9, 0)
+    camera.lookAt(0, 0.32 + scrollP * 0.9, 0)
   })
 
   return {
