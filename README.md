@@ -2,7 +2,7 @@
 
 A cinematic, 3D-first marketing site for **Bashman Natural Medicine** — a prophetic & herbal medicine practice treating Hepatitis B, ulcers and chronic illness.
 
-Built with **Vite (MPA) · Three.js · GSAP ScrollTrigger · Lenis**. Every organ is procedurally generated geometry — no external model downloads.
+Built with **Vite (MPA) · Three.js · GSAP ScrollTrigger · Lenis**. Every organ and the homepage pomegranate centrepiece are sculpted procedurally (smooth-blended signed-distance fields → watertight surface-net meshing → analytic normals → handmade PBR textiles) — no external model downloads.
 
 ## Pages
 
@@ -48,12 +48,17 @@ Deploy `dist/` to any static host (Netlify, Vercel, Cloudflare Pages, GitHub Pag
         ├── data/conditions.js
         ├── three/
         │   ├── core.js     # renderer/env/lights/particle helpers
-        │   ├── organs.js   # procedural liver, stomach, kidneys, heart, pancreas, intestines
-        │   ├── hero.js     # home healing-core scene
+        │   ├── sculpt.js   # SDF engine: primitives, smooth ops, marching + smoothing
+        │   ├── tissues.js  # seamless PBR texture painters (canvas)
+        │   ├── tissue-recipes.js # pure color/bump recipes (node-safe previews)
+        │   ├── organs.js   # sculpted liver, stomach, kidneys, heart, pancreas, intestines
+        │   ├── hero.js     # home "Healing Seed" — half-open pomegranate centrepiece
         │   ├── science-viewer.js
         │   └── landing-scene.js
+        ├── dev/harness.js  # dev-only organ/hero viewer (devtest.html)
         └── pages/*.js      # per-page entry scripts
 ```
+`devtest.html` is a local dev tool (not part of the build) — run `npm run dev` and open `/devtest.html?organ=heart` (or `?hero=1`) to inspect any 3D asset. `tools/preview.mjs` renders a CPU ray-traced preview of the SDF fields without a browser: `node tools/preview.mjs liver`.
 
 ## Disclaimer
 

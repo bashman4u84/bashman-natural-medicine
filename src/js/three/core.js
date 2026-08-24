@@ -36,7 +36,8 @@ export function initStage(canvas, opts = {}) {
   const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 60)
   camera.position.set(...camPos)
 
-  const clock = new THREE.Clock()
+  const timer = new THREE.Timer()
+  timer.connect(document)
   let renderFn = null
   let disposed = false
 
@@ -56,8 +57,9 @@ export function initStage(canvas, opts = {}) {
       if (disposed) return
       if (entry.isIntersecting) {
         renderer.setAnimationLoop(() => {
-          const dt = Math.min(clock.getDelta(), 0.05)
-          const t = clock.elapsedTime
+          timer.update()
+          const dt = Math.min(timer.getDelta(), 0.05)
+          const t = timer.getElapsed()
           renderFn?.(dt, t)
           renderer.render(scene, camera)
         })
