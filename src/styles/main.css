@@ -636,7 +636,7 @@ details.faq .faq-body { padding: 0 26px 22px; color: var(--muted); }
 .trust-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
 .lp-stage-wrap { position: relative; height: min(78vh, 720px); z-index: 2; }
 .lp-stage { position: relative; height: 100%; border-radius: 30px; overflow: hidden; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.6); border: 1px solid rgba(232, 201, 106, 0.18); }
-.lp-stage canvas { position: absolute; inset: 0; touch-action: pan-y; }
+.lp-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; }
 .stage-tag {
   position: absolute;
   top: 18px;
@@ -657,7 +657,7 @@ details.faq .faq-body { padding: 0 26px 22px; color: var(--muted); }
 .story-section { position: relative; }
 .story-pin { height: 100svh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; overflow: hidden; position: relative; }
 .story-canvas-holder { position: absolute; inset: 0; }
-.story-canvas-holder canvas { position: absolute; inset: 0; touch-action: pan-y; }
+.story-canvas-holder canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; }
 .story-steps { position: relative; z-index: 4; width: min(1180px, 92%); margin-inline: auto; display: grid; grid-template-columns: 1fr 1fr; pointer-events: none; }
 .story-step {
   grid-column: 2;
