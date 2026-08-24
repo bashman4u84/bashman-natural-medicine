@@ -254,25 +254,25 @@ const BUILDERS = {
  * for motion. The copy lives on the left; the arrangement on the
  * right. Nothing chases the frame. */
 const STILL_LIFE = [
-  { key: 'pomegranate', pos: [1.62, -0.12, 0.35], scale: 0.62, spin: 0.1 },
-  { key: 'leaf', pos: [0.62, 0.78, -0.35], scale: 0.4, tilt: [0.4, -0.7, -0.3] },
-  { key: 'leaf', pos: [2.6, 0.5, -0.55], scale: 0.34, tilt: [-0.3, 0.4, 0.2] },
-  { key: 'leaf', pos: [2.28, -0.95, 0.25], scale: 0.3, tilt: [0.2, 0.9, 0.4] },
-  { key: 'date', pos: [2.55, -0.62, 0.2], scale: 0.22 },
-  { key: 'date-seed', pos: [2.05, -0.85, 0.32], scale: 0.16 },
-  { key: 'honey', pos: [2.68, 0.02, 0.5], scale: 0.34 },
-  { key: 'ginger', pos: [0.55, -0.72, 0.42], scale: 0.32 },
-  { key: 'garlic', pos: [0.95, -0.42, 0.6], scale: 0.26 },
-  { key: 'turmeric', pos: [1.4, -0.85, 0.4], scale: 0.3 },
-  { key: 'bee', pos: [2.62, 0.85, 0.55], scale: 0.2 },
+  { key: 'pomegranate', pos: [1.85, -0.05, 0.25], scale: 0.6, spin: 0.1 },
+  { key: 'leaf', pos: [1.35, 0.8, -0.35], scale: 0.42, tilt: [0.4, -0.7, -0.3] },
+  { key: 'leaf', pos: [2.7, 0.6, -0.5], scale: 0.35, tilt: [-0.3, 0.4, 0.2] },
+  { key: 'leaf', pos: [2.6, -0.75, 0.2], scale: 0.32, tilt: [0.2, 0.9, 0.4] },
+  { key: 'date', pos: [2.2, -0.95, 0.3], scale: 0.22 },
+  { key: 'date-seed', pos: [2.75, -0.75, 0.35], scale: 0.16 },
+  { key: 'honey', pos: [2.85, 0.02, 0.45], scale: 0.34 },
+  { key: 'ginger', pos: [1.3, -0.65, 0.45], scale: 0.32 },
+  { key: 'garlic', pos: [1.62, -0.32, 0.62], scale: 0.26 },
+  { key: 'turmeric', pos: [2.15, -0.62, 0.4], scale: 0.3 },
+  { key: 'bee', pos: [2.5, 0.95, 0.55], scale: 0.2 },
   { key: 'leaf', pos: [-2.6, 1.25, -1.4], scale: 0.24, drift: 0.09, tilt: [0.5, 0.2, -0.2] }
 ]
 
 export function initHero(canvas) {
-  const stage = initStage(canvas, { fov: 40, camPos: [1.05, 0.08, 5.6], shadows: false, exposure: 0.98 })
+  const stage = initStage(canvas, { fov: 40, camPos: [1.9, 0.05, 5.7], shadows: false, exposure: 0.98 })
   const { scene, camera } = stage
   studioLights(scene)
-  const frontKey = new THREE.DirectionalLight('#ffdcae', 1.35)
+  const frontKey = new THREE.DirectionalLight('#ffdcae', 1.6)
   frontKey.position.set(-1.6, 1.4, 3.4)
   scene.add(frontKey)
 
@@ -284,7 +284,7 @@ export function initHero(canvas) {
     })
   )
   halo.scale.setScalar(5.4)
-  halo.position.set(1.35, 0, -2.4)
+  halo.position.set(2.0, 0, -2.2)
   scene.add(halo)
 
   const dust = driftPoints({ count: IS_TOUCH ? 36 : 70, colors: ['#e8c96a', '#f4dc9a', '#ffd97a'], size: 0.045, rMin: 1.6, rMax: 3.4 })
@@ -366,9 +366,9 @@ export function initHero(canvas) {
     dust.position.y = -scrollP * 0.5
     halo.material.opacity = 0.13 * (1 - scrollP * 0.6)
 
-    camera.position.x = 1.05 + mx * 0.22
+    camera.position.x = 1.9 + mx * 0.22
     camera.position.y = 0.08 - my * 0.16 + scrollP * 0.3
-    camera.lookAt(1.02, 0.22 + scrollP * 0.9, 0)
+    camera.lookAt(1.86, 0.2 + scrollP * 0.9, 0)
   })
 
   return {
