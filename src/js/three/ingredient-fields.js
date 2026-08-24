@@ -14,7 +14,7 @@ const nz = (seed, amp, freq) => {
 
 /* ---------- pomegranate (mirrors hero.js v10) ---------- */
 export function pomRindField() {
-  const cutShape = (q) => op.at(q, SDF.roundBox([0.5, 0.42, 0.38], 0.03), { tx: 0.0, ty: 0.68, tz: 0.62, rx: -0.55 })
+  const cutShape = (q) => op.at(q, SDF.roundBox([0.5, 0.42, 0.38], 0.03), { tx: 0.0, ty: 0.68, tz: -0.62, rx: 0.55 })
   const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
   const tipShape = (q) => op.at(q, SDF.sphere(0.3), { ty: 1.02 })
   const noise = nz(101, 0.02, 2.2)

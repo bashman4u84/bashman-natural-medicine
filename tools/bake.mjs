@@ -137,7 +137,7 @@ function recoverI(s) {
 /* arils: merged rubies hugging the flesh dome */
 function bakeArils() {
   const parts = []
-  const cutAxis = new THREE.Vector3(0, Math.cos(0.75), Math.sin(0.75)).normalize()
+  const cutAxis = new THREE.Vector3(0, Math.cos(0.75), -Math.sin(0.75)).normalize()
   const right = new THREE.Vector3(1, 0, 0)
   const up = new THREE.Vector3().crossVectors(cutAxis, right).normalize()
   const domeC = new THREE.Vector3(0, -0.24, 0)
