@@ -81,7 +81,7 @@ export function initHero(canvas, _opts = {}) {
   const arilMat = new THREE.MeshPhysicalMaterial({
     color: '#c2154c', roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.12,
     sheen: 0.7, sheenColor: new THREE.Color('#ff8ab0'),
-    emissive: new THREE.Color('#5c0820'), emissiveIntensity: 0.35,
+    emissive: new THREE.Color('#7a0d2c'), emissiveIntensity: 0.55,
     envMapIntensity: 1.3
   })
   const arilGeo = new THREE.SphereGeometry(0.052, 10, 8)
@@ -125,10 +125,25 @@ export function initHero(canvas, _opts = {}) {
   arils.instanceMatrix.needsUpdate = true
   scene.add(arils)
 
-  /* ---------- the glowing heart of the fruit ---------- */
-  const innerLight = new THREE.PointLight('#ffb14e', 20, 9, 2)
+  /* ---------- the glowing heart of the fruit ----------
+   * No point light inside: it would pass through the shell and
+   * wash the exterior. The glow is an additive disc set in the
+   * interior, plus emissive arils. */
+  const innerLight = new THREE.PointLight('#ffb14e', 2.5, 6, 2)
   innerLight.position.set(0, 0.35, 0.55)
   scene.add(innerLight)
+  const ember = new THREE.Mesh(
+    new THREE.CircleGeometry(0.55, 32),
+    new THREE.MeshBasicMaterial({
+      map: glowTexture('rgba(255,180,90,1)', 'rgba(255,120,60,0)'),
+      transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending,
+      depthWrite: false, side: THREE.DoubleSide
+    })
+  )
+  ember.position.set(0, 0.3, 0.32)
+  ember.rotation.x = -1.15
+  ember.visible = S('sprites')
+  scene.add(ember)
   const glowSpark = new THREE.Sprite(
     new THREE.SpriteMaterial({
       map: glowTexture('rgba(255,190,110,0.9)'),
@@ -172,6 +187,8 @@ export function initHero(canvas, _opts = {}) {
   /* ---------- float animation ---------- */
   const pivot = new THREE.Group()
   pivot.add(rind, flesh, arils, glowSprite(glowTexture('rgba(255,150,90,0.8)'), 0.5, 1.1))
+  pivot.scale.setScalar(1.32)
+  pivot.position.y = -0.1
   scene.add(pivot)
 
   let scrollP = 0
@@ -196,7 +213,8 @@ export function initHero(canvas, _opts = {}) {
     flesh.scale.setScalar(breathe)
     arils.scale.setScalar(breathe)
 
-    innerLight.intensity = 16 + Math.sin(t * 1.6) * 5 + scrollP * 10
+    innerLight.intensity = 2.2 + Math.sin(t * 1.6) * 0.8 + scrollP * 1.5
+    ember.material.opacity = 0.45 + Math.sin(t * 1.3) * 0.1 + scrollP * 0.2
     glowSpark.material.opacity = 0.26 + Math.sin(t * 1.3) * 0.08 + scrollP * 0.3
 
     rings.forEach((r, i) => {

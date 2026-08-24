@@ -122,13 +122,16 @@ export function initScienceViewer(canvas, hotspotLayer) {
       next.traverse((o) => {
         if (o.isMesh) o.castShadow = true
       })
+      /* measure the final (animated) bounds BEFORE starting the
+       * intro animation, so the camera frames the real organ */
+      next.position.y = 0.4
+      next.updateWorldMatrix(true, true)
+      frameObject(next)
       next.scale.setScalar(0.001)
       scene.add(next)
       current = next
       gsap.to(next.scale, { x: 1, y: 1, z: 1, duration: 0.9, ease: 'elastic.out(1, 0.75)' })
-      next.position.y = 0.4
       gsap.to(next.position, { y: 0, duration: 0.9, ease: 'power3.out' })
-      frameObject(next)
       if (hotspotsList) setTimeout(() => setHotspots(hotspotsList, onHotspotOpen), 700)
     }
     if (current) {
