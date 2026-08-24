@@ -378,6 +378,18 @@ export function initHero(canvas) {
   })
 
   window.__heroFlow = drifters
+  window.__THREE = THREE
+  window.__probeScene = () => {
+    const o = scene.children
+    return { children: o.length, flowChildren: flow.children.length }
+  }
+  setTimeout(() => {
+    window.__renderStats = {
+      calls: stage.renderer ? stage.renderer.info.render.calls : null,
+      tris: stage.renderer ? stage.renderer.info.render.triangles : null,
+      flow: flow.children.length
+    }
+  }, 3000)
   return {
     setScroll(p) { scrollP = p },
     dispose: stage.dispose
