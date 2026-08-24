@@ -82,9 +82,9 @@ async function buildLiver() {
   const hepatVein = (pts, r) =>
     new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), 24, r, 8), hvMat)
   group.add(
-    hepatVein([[0.32, 0.4, -0.05], [0.3, 0.68, -0.08], [0.26, 0.82, -0.1]], 0.035),
-    hepatVein([[0.06, 0.34, 0.18], [0.02, 0.6, 0.16], [-0.02, 0.76, 0.12]], 0.028),
-    hepatVein([[-0.2, 0.3, -0.1], [-0.24, 0.56, -0.12], [-0.28, 0.7, -0.14]], 0.026)
+    hepatVein([[0.32, 0.38, -0.05], [0.3, 0.58, -0.08], [0.27, 0.68, -0.1]], 0.032),
+    hepatVein([[0.06, 0.32, 0.18], [0.02, 0.5, 0.16], [-0.01, 0.62, 0.13]], 0.026),
+    hepatVein([[-0.2, 0.28, -0.1], [-0.23, 0.47, -0.12], [-0.26, 0.58, -0.13]], 0.024)
   )
   /* portal triad at the porta hepatis */
   const portalMat = new THREE.MeshPhysicalMaterial({ color: '#8e5a3a', roughness: 0.4 })

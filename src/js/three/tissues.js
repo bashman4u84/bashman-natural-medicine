@@ -127,8 +127,8 @@ const STROKES = {
     paintVeins(rc, size, { color: 'rgba(255,255,255,0.5)', count: 6, seed: 7, width: 1.8, len: 0.16 })
   },
   stomach: (mc, rc, size) => {
-    paintRidges(mc, size, { color: 'rgba(255,235,220,0.2)', color2: 'rgba(70,26,20,0.18)', spacing: 34, waviness: 10, seed: 5 })
-    paintRidges(rc, size, { color: 'rgba(255,255,255,0.45)', color2: 'rgba(0,0,0,0.25)', spacing: 32, waviness: 10, seed: 5 })
+    paintRidges(mc, size, { color: 'rgba(255,235,220,0.12)', color2: 'rgba(70,26,20,0.1)', spacing: 36, waviness: 9, seed: 5 })
+    paintRidges(rc, size, { color: 'rgba(255,255,255,0.28)', color2: 'rgba(0,0,0,0.14)', spacing: 34, waviness: 9, seed: 5 })
   },
   intestines: (mc, rc, size) => {
     paintRidges(mc, size, { color: 'rgba(255,240,225,0.24)', color2: 'rgba(105,60,45,0.18)', spacing: 26, waviness: 6, seed: 9 })
@@ -140,7 +140,7 @@ const STROKES = {
 const _texCache = new Map()
 export function organTextures(key, { size = 1024, bumpSize = 512 } = {}) {
   if (_texCache.has(key)) return _texCache.get(key)
-  const r = RECIPES[key]
+  const r = RECIPES[key] || RECIPES[key.replace(/s$/, '')]
   const seed = 100 + (key.length * 37) % 900
 
   const mapCanvas = noiseCanvas(size, seed, (u, v, l, m, c2) => {
