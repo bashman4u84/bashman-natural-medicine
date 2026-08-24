@@ -142,11 +142,24 @@ export function intestinesField() {
   }
 }
 
+export function uterusField() {
+  return (p) => {
+    const fundus = op.at(p, SDF.ellipsoid([0.36, 0.3, 0.28]), { ty: 0.32 })
+    const body = op.at(p, SDF.ellipsoid([0.31, 0.42, 0.25]), { ty: -0.04 })
+    let d = op.smoothUnion(fundus, body, 0.12)
+    const cervix = SDF.cone([0, -0.26, 0], [0.03, -0.62, 0.02], 0.13, 0.055)(p)
+    d = op.smoothUnion(d, cervix, 0.09)
+    d += organic(71, 0.014, 3.2)(p)
+    return d
+  }
+}
+
 export const ORGAN_FIELDS = {
   liver: { field: liverField, res: 88 },
   stomach: { field: stomachField, res: 84 },
   kidneys: { field: () => (p) => op.smoothUnion(beanField(-0.6, 0.22, -0.04, 0.12)(p), beanField(0.66, 0.16, -0.04, -0.12)(p), 0.01), res: 80 },
   heart: { field: heartField, res: 84 },
   pancreas: { field: pancreasField, res: 80 },
-  intestines: { field: intestinesField, res: 80 }
+  intestines: { field: intestinesField, res: 80 },
+  uterus: { field: uterusField, res: 82 }
 }

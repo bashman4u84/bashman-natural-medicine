@@ -124,10 +124,35 @@ export const CONDITIONS = {
       { pos: [-0.33, -0.44, 0.22], title: 'Stone in the ureter', body: 'A crystal lodged mid-passage — the cause of waves of sharp flank pain.' },
       { pos: [0.0, -1.06, 0.46], title: 'Irritated bladder', body: 'Backed-up waste burns the bladder wall, urging you day and night.' }
     ]
+  },
+
+  fibroid: {
+    name: 'Uterine Fibroids',
+    organ: 'uterus',
+    tagline: 'When benign growths crowd the womb',
+    happening:
+      'Fibroids are non-cancerous muscle growths forming inside or on the wall of the uterus. Hormone imbalance, inflammation and sluggish pelvic circulation feed them — they swell, press on the bladder and bowel, and cause heavy periods, pain and difficulty conceiving.',
+    causes: ['Oestrogen imbalance (hormone dominance)', 'Sluggish pelvic circulation & stagnation', 'Chronic inflammation', 'Family tendency', 'Gestational & lifestyle weight', 'Late or irregular cycles'],
+    symptoms: ['Heavy, prolonged periods', 'Pelvic pressure & bloating', 'Lower-back pain', 'Pain during intimacy', 'Frequent urination', 'Difficulty conceiving'],
+    note: 'We are not treating the fibroids alone — we correct the hormonal terrain that grows them. That is why relief holds.',
+    remedies: [
+      { name: 'Black seed & raw honey daily', note: 'The Prophetic pair that calms inflammation and rebalances the immune response around the growth.' },
+      { name: 'Bitter leaf & pawpaw smoothie', note: 'Traditional West-African regulators that support hormonal clearance and shrink congestion.' },
+      { name: 'Warm ginger & castor-oil packs', note: 'Applied over the lower belly to break pelvic stagnation and draw healing blood into the womb.' },
+      { name: 'Aloe & moringa detox tonic', note: 'Flushes the estrogen-laden sluggishness and rebuilds the blood the womb deserves.' },
+      { name: 'Hijama pelvic-relief session', note: 'Cupping at sunnah points to unblock the stagnation that feeds the growth.' },
+      { name: 'Cycle-correcting sunnah meals', note: 'Dates, figs, olives and portion-timed eating that bring the monthly cycle back to rhythm.' }
+    ],
+    link: '/fibroid.html',
+    hotspots: [
+      { pos: [-0.28, 0.3, 0.18], title: 'Fibroid cluster (fundus)', body: 'Muscle nodules growing upward — the bulge you feel and the heavy periods that follow.' },
+      { pos: [0.24, 0.02, 0.2], title: 'Wall fibroid pressing', body: 'Growth inside the wall presses the bladder and bowel — urgency, bloating and back ache.' },
+      { pos: [0.02, -0.52, 0.16], title: 'Cervix under strain', body: 'The natural passage is narrowed — this is the root of painful cycles and difficulty conceiving.' }
+    ]
   }
 }
 
-export const CONDITION_ORDER = ['hepatitis-b', 'ulcer', 'typhoid', 'hypertension', 'diabetes', 'kidney']
+export const CONDITION_ORDER = ['hepatitis-b', 'ulcer', 'typhoid', 'hypertension', 'diabetes', 'kidney', 'fibroid']
 
 export const ORGAN_META = {
   liver: { label: 'The Liver', sub: 'Your chemical factory & blood purifier' },
@@ -135,5 +160,6 @@ export const ORGAN_META = {
   intestines: { label: 'The Intestines', sub: 'The gateway between food and blood' },
   heart: { label: 'The Heart', sub: 'The engine of the river of life' },
   pancreas: { label: 'The Pancreas', sub: 'The quiet guardian of blood sugar' },
-  kidneys: { label: 'The Kidneys', sub: 'Twin filters working day and night' }
+  kidneys: { label: 'The Kidneys', sub: 'Twin filters working day and night' },
+  uterus: { label: 'The Uterus', sub: 'The cradle of life — and of fibroids' }
 }

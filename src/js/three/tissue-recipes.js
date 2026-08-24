@@ -143,6 +143,25 @@ export const RECIPES = {
     roughness: (u, v, l, m, c2) => wetRoughness(u, v, l, m, c2, { min: 0.1, max: 0.5 })
   },
 
+  uterus: {
+    palette: {
+      base: [0.56, 0.16, 0.17], dark: [0.4, 0.09, 0.1], light: [0.68, 0.25, 0.24],
+      grain: 0.3, speckle: 0.1
+    },
+    color(u, v, l, m, c2) {
+      let col = mix(this.palette.base, this.palette.dark, Math.max(0, l) * this.palette.grain + Math.max(0, m) * 0.3)
+      col = mix(col, this.palette.light, Math.max(0, -l) * this.palette.grain + Math.max(0, -m) * 0.16)
+      const fold = Math.sin(u * Math.PI * 2 * 6 + v * 3 + l * 1.6) * 0.5 + 0.5
+      col = mix(col, [0.74, 0.32, 0.3], fold * 0.1)
+      return col
+    },
+    bump(u, v, l, m, c2) {
+      const fold = Math.sin(u * Math.PI * 2 * 6 + v * 3 + l * 1.6) * 0.5 + 0.5
+      return clamp01(0.52 + m * 0.12 + c2 * 0.1 + fold * 0.22)
+    },
+    roughness: (u, v, l, m, c2) => wetRoughness(u, v, l, m, c2, { min: 0.12, max: 0.55 })
+  },
+
   pomegranate: {
     palette: { base: [0.44, 0.038, 0.075], dark: [0.28, 0.018, 0.045], light: [0.56, 0.09, 0.12], grain: 0.3, speckle: 0.12 },
     color(u, v, l, m, c2) {

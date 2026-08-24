@@ -15,7 +15,8 @@ export default defineConfig({
         testimonials: resolve(import.meta.dirname, 'testimonials.html'),
         contact: resolve(import.meta.dirname, 'contact.html'),
         'hepatitis-b': resolve(import.meta.dirname, 'hepatitis-b.html'),
-        ulcer: resolve(import.meta.dirname, 'ulcer.html')
+        ulcer: resolve(import.meta.dirname, 'ulcer.html'),
+        fibroid: resolve(import.meta.dirname, 'fibroid.html')
       }
     }
   },

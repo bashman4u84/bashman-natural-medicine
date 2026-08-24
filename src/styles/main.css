@@ -521,6 +521,24 @@ details.faq .faq-body { padding: 0 26px 22px; color: var(--muted); }
 }
 body:has(#explorer) .sci-layout { margin-top: clamp(8px, 2vw, 24px); }
 
+.proof-grid { align-items: start; }
+.proof-card { overflow: hidden; padding: 0; }
+.proof-card img { width: 100%; height: auto; display: block; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.proof-card:hover img { transform: scale(1.04); }
+.proof-card figcaption { padding: 16px 18px 20px; }
+.proof-card figcaption strong { display: block; font-family: var(--font-display); font-size: 1.02rem; color: var(--ink); line-height: 1.35; margin-bottom: 6px; }
+.proof-card figcaption span { color: var(--muted); font-size: 0.92rem; }
+.video-proof { margin-top: 8px; }
+.video-card { padding: 0; overflow: hidden; }
+.video-card video { width: 100%; display: block; aspect-ratio: 16 / 10; object-fit: cover; }
+.video-card figcaption { padding: 14px 16px 16px; }
+.video-card figcaption strong { display: block; font-family: var(--font-display); font-size: 1rem; margin-bottom: 4px; }
+.video-card figcaption span { color: var(--muted); font-size: 0.9rem; }
+.lab-mini { display: flex; align-items: center; gap: 12px; margin: 20px 0 4px; }
+.lab-mini img { width: 84px; height: 112px; object-fit: cover; object-position: top; border-radius: 10px; border: 1px solid rgba(232, 201, 106, 0.35); box-shadow: 0 8px 22px -12px rgba(0, 0, 0, 0.5); }
+.lab-mini span { font-family: var(--font-display); font-size: 0.98rem; color: var(--gold-2); line-height: 1.3; }
+.lab-mini small { display: block; color: rgba(246, 241, 231, 0.6); font-family: var(--font-body); font-size: 0.8rem; }
+
 .hotspot {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -812,6 +830,10 @@ body:has(#explorer) .sci-layout { margin-top: clamp(8px, 2vw, 24px); }
   .nav-links a { font-size: 1.25rem; }
   .nav-toggle { display: grid; }
   .split, .grid-3 { grid-template-columns: 1fr; }
+  .hero-inner { grid-template-columns: 1fr; min-height: auto; }
+  .hero-copy { text-align: center; padding-bottom: 24px; }
+  .hero h1 { margin-inline: auto; }
+  .hero .lead, .hero .btn-row, .hero .trust-row { margin-inline: auto; justify-content: center; }
   .lp-hero { grid-template-columns: 1fr; padding-top: calc(var(--header-h) + 20px); }
   .lp-stage-wrap { height: 58vh; order: 2; }
   .story-pin { display: block; }
@@ -862,11 +884,21 @@ body:has(#explorer) .sci-layout { margin-top: clamp(8px, 2vw, 24px); }
     linear-gradient(165deg, var(--forest) 0%, var(--pine) 58%, #0d2c1f 100%);
 }
 #heroCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hero-inner { position: relative; z-index: 3; text-align: center; color: var(--bg); padding-top: var(--header-h); }
-.hero h1 { max-width: 880px; margin-inline: auto; margin-top: 26px; }
-.hero .lead { max-width: 640px; margin-inline: auto; margin-top: 20px; font-size: clamp(1.05rem, 1.7vw, 1.24rem); color: rgba(246, 241, 231, 0.78); }
-.hero .btn-row { margin-top: 34px; }
-.hero .trust-row { margin-top: 30px; justify-content: center; }
+.hero-inner {
+  position: relative;
+  z-index: 3;
+  color: var(--bg);
+  padding-top: var(--header-h);
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  align-items: center;
+  min-height: calc(100svh - var(--header-h));
+}
+.hero-copy { text-align: left; padding-bottom: clamp(40px, 8vh, 90px); }
+.hero h1 { max-width: 620px; margin-top: 24px; font-size: clamp(2.4rem, 5vw, 4rem); }
+.hero .lead { max-width: 540px; margin-top: 20px; font-size: clamp(1.02rem, 1.5vw, 1.18rem); color: rgba(246, 241, 231, 0.78); }
+.hero .btn-row { margin-top: 32px; }
+.hero .trust-row { margin-top: 28px; }
 
 /* ============================================================
  * PREMIUM PASS — hero & homepage refinements

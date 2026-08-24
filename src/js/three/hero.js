@@ -248,21 +248,28 @@ const BUILDERS = {
   }
 }
 
-/* ---------- the drift parade ---------- */
-const PARADE = [
-  { key: 'pomegranate', n: 1, scale: 0.4 },
-  { key: 'leaf', n: 4, scale: 0.3 },
-  { key: 'date', n: 2, scale: 0.2 },
-  { key: 'date-seed', n: 2, scale: 0.15 },
-  { key: 'bee', n: 2, scale: 0.2 },
-  { key: 'honey', n: 1, scale: 0.3 },
-  { key: 'ginger', n: 1, scale: 0.26 },
-  { key: 'garlic', n: 1, scale: 0.22 },
-  { key: 'turmeric', n: 1, scale: 0.26 }
+/* ---------- the apothecary still-life ----------
+ * A deliberate composition: the pomegranate at the heart, the
+ * garden's simples arranged around it, one leaf drifting across
+ * for motion. The copy lives on the left; the arrangement on the
+ * right. Nothing chases the frame. */
+const STILL_LIFE = [
+  { key: 'pomegranate', pos: [1.62, -0.12, 0.35], scale: 0.62, spin: 0.1 },
+  { key: 'leaf', pos: [0.62, 0.78, -0.35], scale: 0.4, tilt: [0.4, -0.7, -0.3] },
+  { key: 'leaf', pos: [2.6, 0.5, -0.55], scale: 0.34, tilt: [-0.3, 0.4, 0.2] },
+  { key: 'leaf', pos: [2.28, -0.95, 0.25], scale: 0.3, tilt: [0.2, 0.9, 0.4] },
+  { key: 'date', pos: [2.55, -0.62, 0.2], scale: 0.22 },
+  { key: 'date-seed', pos: [2.05, -0.85, 0.32], scale: 0.16 },
+  { key: 'honey', pos: [2.68, 0.02, 0.5], scale: 0.34 },
+  { key: 'ginger', pos: [0.55, -0.72, 0.42], scale: 0.32 },
+  { key: 'garlic', pos: [0.95, -0.42, 0.6], scale: 0.26 },
+  { key: 'turmeric', pos: [1.4, -0.85, 0.4], scale: 0.3 },
+  { key: 'bee', pos: [2.62, 0.85, 0.55], scale: 0.2 },
+  { key: 'leaf', pos: [-2.6, 1.25, -1.4], scale: 0.24, drift: 0.09, tilt: [0.5, 0.2, -0.2] }
 ]
 
 export function initHero(canvas) {
-  const stage = initStage(canvas, { fov: 42, camPos: [0, 0.1, 5.4], shadows: false, exposure: 0.98 })
+  const stage = initStage(canvas, { fov: 40, camPos: [1.05, 0.08, 5.6], shadows: false, exposure: 0.98 })
   const { scene, camera } = stage
   studioLights(scene)
   const frontKey = new THREE.DirectionalLight('#ffdcae', 1.35)
@@ -277,49 +284,35 @@ export function initHero(canvas) {
     })
   )
   halo.scale.setScalar(5.4)
-  halo.position.set(0, 0, -2.6)
+  halo.position.set(1.35, 0, -2.4)
   scene.add(halo)
 
   const dust = driftPoints({ count: IS_TOUCH ? 36 : 70, colors: ['#e8c96a', '#f4dc9a', '#ffd97a'], size: 0.045, rMin: 1.6, rMax: 3.4 })
   scene.add(dust)
 
-  /* the flow */
+  /* the arrangement */
   const flow = new THREE.Group()
   scene.add(flow)
   const drifters = []
-
   const rand = rng(4242)
-  let slot = 0
-  const lanes = {
-    top: { y: 1.05, z: -0.4, s: 1.0, o: 0.85 },
-    band: { y: 0.0, z: -1.5, s: 0.72, o: 0.5 },
-    bottom: { y: -1.05, z: -0.2, s: 1.05, o: 0.9 },
-    front: { y: -0.7, z: 0.9, s: 1.35, o: 1.0 }
-  }
-
-  for (const def of PARADE) {
-    for (let i = 0; i < def.n; i++) {
-      const laneName = def.key === 'pomegranate'
-        ? 'bottom'
-        : ['bottom', 'top', 'band', 'front', 'bottom', 'top'][slot % 6]
-      slot++
-      const lane = lanes[laneName]
-      drifters.push({
-        key: def.key,
-        builder: BUILDERS[def.key],
-        scale: def.scale * lane.s * (0.85 + rand() * 0.3),
-        lane,
-        x: -3.6 + rand() * 7.2,
-        speed: 0.028 + rand() * 0.05,
-        bobA: 0.1 + rand() * 0.16,
-        bobF: 0.14 + rand() * 0.2,
-        phase: rand() * TAU,
-        rotX: (rand() - 0.5) * 0.8,
-        rotY: rand() * TAU,
-        rotS: 0.05 + rand() * 0.12,
-        spin: (rand() - 0.5) * 0.06
-      })
-    }
+  const mobile = (typeof innerWidth !== 'undefined' && innerWidth < 900)
+  for (const def of STILL_LIFE) {
+    const p = def.pos
+    drifters.push({
+      key: def.key,
+      builder: BUILDERS[def.key],
+      scale: def.scale,
+      x: mobile ? p[0] * 0.5 : p[0],
+      y: mobile ? p[1] - 0.85 : p[1],
+      z: p[2],
+      drift: def.drift || 0,
+      tilt: def.tilt || [0, 0, 0],
+      bobA: 0.04 + rand() * 0.05,
+      bobF: 0.1 + rand() * 0.12,
+      phase: rand() * TAU,
+      rotS: 0.04 + rand() * 0.06,
+      spin: def.spin ?? 0.08
+    })
   }
 
   /* load part chunks one by one; each joins the flow as it arrives */
@@ -359,12 +352,11 @@ export function initHero(canvas) {
 
     for (const d of drifters) {
       if (!d.wrap) continue
-      const x = ((d.x + t * d.speed + 3.8) % 7.6) - 3.8
-      d.wrap.position.x = x
-      d.wrap.position.y = d.lane.y + Math.sin(t * d.bobF * TAU + d.phase) * d.bobA
-      d.wrap.rotation.x = d.rotX + Math.sin(t * d.spin * TAU + d.phase) * 0.3
-      d.wrap.rotation.y = d.rotY + t * d.rotS
-      d.wrap.rotation.z = Math.sin(t * 0.1 + d.phase) * 0.2
+      d.wrap.position.x = d.x + ((t * d.drift + 1.2) % 7.6) - 3.8
+      d.wrap.position.y = d.y + Math.sin(t * d.bobF * TAU + d.phase) * d.bobA
+      d.wrap.rotation.x = d.tilt[0] + Math.sin(t * 0.12 + d.phase) * 0.14
+      d.wrap.rotation.y = d.tilt[1] + t * d.rotS
+      d.wrap.rotation.z = d.tilt[2] + Math.sin(t * 0.09 + d.phase) * 0.1
       if (d.key === 'bee' && d.obj?.userData?.wings) {
         d.obj.userData.wings.rotation.y = Math.sin(t * 9 + d.phase) * 0.55
       }
@@ -374,9 +366,9 @@ export function initHero(canvas) {
     dust.position.y = -scrollP * 0.5
     halo.material.opacity = 0.13 * (1 - scrollP * 0.6)
 
-    camera.position.x = mx * 0.2
-    camera.position.y = 0.1 - my * 0.14 + scrollP * 0.3
-    camera.lookAt(0, 0.24 + scrollP * 0.9, 0)
+    camera.position.x = 1.05 + mx * 0.22
+    camera.position.y = 0.08 - my * 0.16 + scrollP * 0.3
+    camera.lookAt(1.02, 0.22 + scrollP * 0.9, 0)
   })
 
   return {

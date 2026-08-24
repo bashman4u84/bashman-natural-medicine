@@ -22,6 +22,7 @@ const icons = {
   intestines: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 4h10M17 4c0 3-2 4-5 4s-5 1-5 4 2 4 5 4 5 1 5 4M7 20h10"/></svg>',
   heart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.5-9-9c-1.3-3 .7-6.5 4-6.5 2.2 0 3.7 1.3 5 3 1.3-1.7 2.8-3 5-3 3.3 0 5.3 3.5 4 6.5-2 4.5-9 9-9 9Z"/></svg>',
   pancreas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9c3-2 6-2 8 0s5 2.5 8 1M4 9c-.5 2 .5 3.5 2 4s4 .5 5-1M20 10c.5 2-.5 3.5-2 4"/></svg>',
+  uterus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c-3 0-5 2-5 5 0 2 1 3 1 5s-1 4-1 6c0 1.5 2.2 2 5 2s5-.5 5-2c0-2-1-4-1-6s1-3 1-5c0-3-2-5-5-5Z"/><path d="M7 6c-2-1-4 0-4 0M17 6c2-1 4 0 4 0"/></svg>',
   kidneys: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 4C6 4 4 7 4 11s2 9 4 9 2.5-2.5 2.5-5S12 4 9 4Zm6 0c3 0 5 3 5 7s-2 9-4 9-2.5-2.5-2.5-5S15 4 15 4Z"/></svg>'
 }
 

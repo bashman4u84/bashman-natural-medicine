@@ -13,7 +13,8 @@ const FLESH = {
   kidneys: { bumpScale: 0.5, roughness: 0.62, clearcoat: 0.6, clearcoatRoughness: 0.16, sheen: 0.68, sheenColor: '#ffa48a', envMapIntensity: 1.1, transmission: 0.12, thickness: 1.8, attenuationColor: '#7d2f1a', attenuationDistance: 0.8 },
   heart: { bumpScale: 0.45, roughness: 0.58, clearcoat: 0.65, clearcoatRoughness: 0.12, sheen: 0.75, sheenColor: '#ff9a8e', envMapIntensity: 1.2, transmission: 0.14, thickness: 2.4, attenuationColor: '#8a1a12', attenuationDistance: 0.75 },
   pancreas: { bumpScale: 0.7, roughness: 0.66, clearcoat: 0.35, clearcoatRoughness: 0.3, sheen: 0.5, sheenColor: '#ffdfa8', envMapIntensity: 0.95, transmission: 0.06, thickness: 1.4, attenuationColor: '#c9924f', attenuationDistance: 0.6 },
-  intestines: { bumpScale: 0.6, roughness: 0.6, clearcoat: 0.55, clearcoatRoughness: 0.18, sheen: 0.7, sheenColor: '#ffd2b8', envMapIntensity: 1.05, transmission: 0.16, thickness: 2.0, attenuationColor: '#a4603a', attenuationDistance: 0.8 }
+  intestines: { bumpScale: 0.6, roughness: 0.6, clearcoat: 0.55, clearcoatRoughness: 0.18, sheen: 0.7, sheenColor: '#ffd2b8', envMapIntensity: 1.05, transmission: 0.16, thickness: 2.0, attenuationColor: '#a4603a', attenuationDistance: 0.8 },
+  uterus: { bumpScale: 0.55, roughness: 0.62, clearcoat: 0.6, clearcoatRoughness: 0.16, sheen: 0.7, sheenColor: '#ff9a92', envMapIntensity: 1.1, transmission: 0.16, thickness: 2.2, attenuationColor: '#a23540', attenuationDistance: 0.75 },
 }
 function fleshMat(key, t) {
   const cfg = FLESH[key]
@@ -271,13 +272,46 @@ async function buildIntestines() {
   return group
 }
 
+async function buildUterus() {
+  const group = new THREE.Group()
+  const t = organTextures('uterus')
+  const mat = fleshMat('uterus', t)
+  const mesh = new THREE.Mesh(await loadGeometry('uterus'), mat)
+  mesh.castShadow = true
+  group.add(mesh)
+
+  /* fallopian tubes + ovaries */
+  const tubeMat = new THREE.MeshPhysicalMaterial({ color: '#b06a5e', roughness: 0.4, clearcoat: 0.3 })
+  const ovaryMat = new THREE.MeshPhysicalMaterial({ color: '#e0b892', roughness: 0.45, clearcoat: 0.2 })
+  ;[-1, 1].forEach((s) => {
+    const tube = new THREE.Mesh(
+      new THREE.TubeGeometry(
+        new THREE.CatmullRomCurve3([
+          new THREE.Vector3(s * 0.22, 0.42, 0.0),
+          new THREE.Vector3(s * 0.38, 0.5, 0.06),
+          new THREE.Vector3(s * 0.5, 0.36, 0.1),
+          new THREE.Vector3(s * 0.44, 0.24, 0.12)
+        ]), 28, 0.035, 8),
+      tubeMat
+    )
+    group.add(tube)
+    const ovary = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 10), ovaryMat)
+    ovary.scale.set(0.75, 1, 0.6)
+    ovary.position.set(s * 0.47, 0.24, 0.1)
+    group.add(ovary)
+  })
+  group.rotation.set(0.12, 0.25, 0.28)
+  return group
+}
+
 export const ORGANS = {
   liver: { label: 'Liver', build: buildLiver },
   stomach: { label: 'Stomach', build: buildStomach },
   kidneys: { label: 'Kidneys', build: buildKidneys },
   heart: { label: 'Heart', build: buildHeart },
   pancreas: { label: 'Pancreas', build: buildPancreas },
-  intestines: { label: 'Intestines', build: buildIntestines }
+  intestines: { label: 'Intestines', build: buildIntestines },
+  uterus: { label: 'Uterus', build: buildUterus }
 }
 
 export async function makeOrgan(key) {

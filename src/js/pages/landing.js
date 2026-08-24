@@ -4,9 +4,9 @@ import { initLandingScene } from '../three/landing-scene.js'
 initShared()
 
 const kind = document.body.dataset.landing
-const organ = kind === 'ulcer' ? 'stomach' : 'liver'
-const bad = kind === 'ulcer' ? 'drop' : 'virus'
-const badColor = kind === 'ulcer' ? '#ff8c42' : '#9fd44a'
+const organ = kind === 'ulcer' ? 'stomach' : kind === 'fibroid' ? 'uterus' : 'liver'
+const bad = kind === 'ulcer' || kind === 'fibroid' ? 'drop' : 'virus'
+const badColor = kind === 'ulcer' ? '#ff8c42' : kind === 'fibroid' ? '#e0895a' : '#9fd44a'
 
 const heroCanvas = document.getElementById('lpCanvas')
 const storyCanvas = document.getElementById('storyCanvas')

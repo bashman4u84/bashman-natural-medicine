@@ -28,19 +28,22 @@ export function initScienceViewer(canvas, hotspotLayer) {
   controls.maxPolarAngle = 2.35
   controls.target.set(0, -0.05, 0)
 
-  /* frame an object so it fills the stage gracefully */
+  /* frame an object: aim at the organ's TRUE center and size it to
+   * ~76% of the stage, slightly below the overlay title */
   const _frame = new THREE.Box3()
   const _sph = new THREE.Sphere()
   function frameObject(obj) {
+    obj.updateWorldMatrix(true, true)
     _frame.setFromObject(obj)
-    const r = _frame.getBoundingSphere(_sph).radius
-    const d = (r * 1.28) / Math.tan((40 * Math.PI) / 360)
+    const sphere = _frame.getBoundingSphere(_sph)
+    const r = Math.max(sphere.radius, 0.1)
+    const d = r / (Math.tan((40 * Math.PI) / 360) * 0.76)
     let dir = camera.position.clone().sub(controls.target)
     if (dir.lengthSq() < 0.01) dir = new THREE.Vector3(0, 0.2, 1)
     dir.normalize()
-    /* snap into frame — a tween fights OrbitControls' damping */
-    controls.target.set(0, 0, 0)
-    camera.position.set(dir.x * d, dir.y * d + 0.12, dir.z * d)
+    const cy = sphere.center.y - 0.06
+    controls.target.set(sphere.center.x, cy, sphere.center.z)
+    camera.position.set(sphere.center.x + dir.x * d, cy + dir.y * d + 0.1, sphere.center.z + dir.z * d)
     controls.update()
   }
 
@@ -152,15 +155,18 @@ export function initScienceViewer(canvas, hotspotLayer) {
       next.traverse((o) => {
         if (o.isMesh) o.castShadow = true
       })
-      /* measure the final (animated) bounds BEFORE starting the
-       * intro animation, so the camera frames the real organ */
-      next.position.y = 0.4
-      next.updateWorldMatrix(true, true)
-      frameObject(next)
-      next.scale.setScalar(0.001)
-      current = next
-      gsap.to(next.scale, { x: 1, y: 1, z: 1, duration: 0.72, ease: 'elastic.out(1, 0.72)' })
-      gsap.to(next.position, { y: 0, duration: 0.9, ease: 'power3.out' })
+      /* the intro animates a wrapper, so the organ keeps its fitted
+       * center/scale — the camera frames the organ, not the wrapper */
+      const wrap = new THREE.Group()
+      wrap.add(next)
+      wrap.userData.tick = (t) => next.userData?.tick?.(t)
+      scene.add(wrap)
+      current = wrap
+      frameObject(wrap)
+      wrap.scale.setScalar(0.001)
+      wrap.position.y = 0.4
+      gsap.to(wrap.scale, { x: 1, y: 1, z: 1, duration: 0.72, ease: 'elastic.out(1, 0.72)' })
+      gsap.to(wrap.position, { y: 0, duration: 0.9, ease: 'power3.out' })
       if (hotspotsList) setTimeout(() => setHotspots(hotspotsList, onHotspotOpen), 700)
   }
 
