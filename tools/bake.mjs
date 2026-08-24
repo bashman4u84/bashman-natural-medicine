@@ -31,7 +31,7 @@ function geomToData(geo) {
   const vCount = p.length / 3
 
   // bbox per axis
-  const mn = [-1e9, -1e9, -1e9]
+  const mn = [1e9, 1e9, 1e9]
   const mx = [-1e9, -1e9, -1e9]
   for (let i = 0; i < vCount; i++) {
     for (let a = 0; a < 3; a++) {
