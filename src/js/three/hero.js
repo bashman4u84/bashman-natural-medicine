@@ -106,12 +106,12 @@ export function initHero(canvas, _opts = {}) {
     const a = rand() * Math.PI * 2
     const rad = 0.06 + ring * 0.085 + rand() * 0.04
     const tang = rad
-    const axial = 0.1 + Math.cos(rad / 0.6) * 0.06 + rand() * 0.05
+    const axial = 0.03 + Math.cos(rad / 0.6) * 0.05 + rand() * 0.04
     const p = center
       .clone()
       .addScaledVector(right, Math.cos(a) * tang)
       .addScaledVector(up, Math.sin(a) * tang)
-      .addScaledVector(cutAxis, axial + rand() * 0.06)
+      .addScaledVector(cutAxis, axial + rand() * 0.04)
     p.x += (rand() - 0.5) * 0.02
     p.y += (rand() - 0.5) * 0.02
     p.z += (rand() - 0.5) * 0.02
@@ -174,11 +174,17 @@ export function initHero(canvas, _opts = {}) {
       transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending
     })
   )
-  halo.scale.setScalar(6)
-  halo.position.z = -1.8
-  halo.material.opacity = 0.1
+  halo.scale.setScalar(3.4)
+  halo.position.z = -1.4
+  halo.material.opacity = 0.14
   halo.visible = S('sprites')
   scene.add(halo)
+
+  /* dedicated front key: the studio key rakes from above-right and
+   * leaves the camera-facing flank dark — this lifts the fruit's face */
+  const frontKey = new THREE.DirectionalLight('#ffe6bd', 1.9)
+  frontKey.position.set(-1.6, 1.4, 3.4)
+  scene.add(frontKey)
 
   const dust = driftPoints({ count: IS_TOUCH ? 40 : 80, colors: ['#e8c96a', '#f4dc9a', '#ffd97a'], size: 0.05, rMin: 1.5, rMax: 3.2 })
   dust.visible = S('points')

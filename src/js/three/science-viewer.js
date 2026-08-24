@@ -28,16 +28,13 @@ export function initScienceViewer(canvas, hotspotLayer) {
     _frame.setFromObject(obj)
     const r = _frame.getBoundingSphere(_sph).radius
     const d = (r * 1.28) / Math.tan((40 * Math.PI) / 360)
-    const dir = camera.position.clone().sub(controls.target).normalize()
-    if (dir.lengthSq() < 0.01) dir.set(0, 0.2, 1).normalize()
-    gsap.to(controls.target, { x: 0, y: 0, z: 0, duration: 0.8, ease: 'power2.out' })
-    gsap.to(camera.position, {
-      x: dir.x * d,
-      y: dir.y * d + 0.12,
-      z: dir.z * d,
-      duration: 0.9,
-      ease: 'power2.out'
-    })
+    let dir = camera.position.clone().sub(controls.target)
+    if (dir.lengthSq() < 0.01) dir = new THREE.Vector3(0, 0.2, 1)
+    dir.normalize()
+    /* snap into frame — a tween fights OrbitControls' damping */
+    controls.target.set(0, 0, 0)
+    camera.position.set(dir.x * d, dir.y * d + 0.12, dir.z * d)
+    controls.update()
   }
 
   const dust = driftPoints({ count: 60, size: 0.045, rMin: 2, rMax: 3.6 })
