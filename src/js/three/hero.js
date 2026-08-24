@@ -24,26 +24,26 @@ function fieldNoise(seed, amp, freq) {
 /* The rind: body sphere, hollowed, with a tilted opening cut */
 function rindField() {
   const bodyNoise = fieldNoise(101, 0.02, 2.2)
-  const cut = op.at((p) => p, SDF.roundBox([0.52, 0.42, 0.42], 0.03), {
+  const cutShape = op.at((q) => q, SDF.roundBox([0.52, 0.42, 0.42], 0.03), {
     tx: 0.0, ty: 0.88, tz: 0.5, rx: -0.62
   })
-  const inner = op.at((p) => p, SDF.sphere(0.78), { ty: -0.06 })
-  const upperTip = op.at((p) => p, SDF.sphere(0.3), { ty: 1.02 }) // calyx base bulge
+  const innerShape = (q) => op.at(q, SDF.sphere(0.78), { ty: -0.06 })
+  const tipShape = (q) => op.at(q, SDF.sphere(0.3), { ty: 1.02 }) // calyx base bulge
   return (p) => {
     // lumpy body
     let d = SDF.ellipsoid([0.98, 0.92, 0.92])(p) + bodyNoise(p)
-    d = op.smoothUnion(d, upperTip(p), 0.2)
+    d = op.smoothUnion(d, tipShape(p), 0.2)
     // hollow interior
-    d = op.smoothSubtract(d, inner(p), 0.02)
+    d = op.smoothSubtract(d, innerShape(p), 0.02)
     // the opening (crisp chisel cut)
-    d = op.subtract(d, cut(p))
+    d = op.subtract(d, cutShape(p))
     return d
   }
 }
 
 /* interior flesh dome the arils sit on */
 function fleshField() {
-  const dome = op.at((p) => p, SDF.sphere(0.84), { ty: -0.26 })
+  const dome = (q) => op.at(q, SDF.sphere(0.84), { ty: -0.26 })
   return (p) => {
     const n = fieldNoise(103, 0.012, 2.6)(p)
     return dome(p) + n
