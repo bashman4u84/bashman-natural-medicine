@@ -113,27 +113,34 @@ export function initScienceViewer(canvas, hotspotLayer) {
   }
 
   let buildToken = 0
+  const stageWrap = canvas.parentElement
   function setOrgan(key, hotspotsList, onHotspotOpen) {
     if (key === currentKey) return
     currentKey = key
     clearHotspots()
     const token = ++buildToken
+    /* start building NOW — textures + decode overlap the shrink,
+     * so the next organ is usually already waiting by the time the
+     * stage clears (kills the "hang" when switching conditions) */
+    stageWrap?.classList.add('loading')
+    const nextPromise = makeOrgan(key)
     const buildNext = () => {
       if (current) {
         scene.remove(current)
         disposeGroup(current)
         current = null
       }
-      makeOrgan(key).then((built) => {
+      nextPromise.then((built) => {
         if (token !== buildToken || !built) return
         scene.add(built)
         attachOrgan(built, hotspotsList, onHotspotOpen)
-      })
+        stageWrap?.classList.remove('loading')
+      }).catch(() => stageWrap?.classList.remove('loading'))
     }
     if (current) {
       gsap.to(current.scale, {
         x: 0.001, y: 0.001, z: 0.001,
-        duration: 0.32, ease: 'power2.in',
+        duration: 0.2, ease: 'power2.in',
         onComplete: buildNext
       })
     } else {
@@ -152,7 +159,7 @@ export function initScienceViewer(canvas, hotspotLayer) {
       frameObject(next)
       next.scale.setScalar(0.001)
       current = next
-      gsap.to(next.scale, { x: 1, y: 1, z: 1, duration: 0.9, ease: 'elastic.out(1, 0.75)' })
+      gsap.to(next.scale, { x: 1, y: 1, z: 1, duration: 0.72, ease: 'elastic.out(1, 0.72)' })
       gsap.to(next.position, { y: 0, duration: 0.9, ease: 'power3.out' })
       if (hotspotsList) setTimeout(() => setHotspots(hotspotsList, onHotspotOpen), 700)
   }

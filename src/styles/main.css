@@ -494,6 +494,33 @@ details.faq .faq-body { padding: 0 26px 22px; color: var(--muted); }
 .canvas-stage { position: relative; }
 .canvas-stage canvas { display: block; width: 100%; height: 100%; }
 .sci-stage > canvas { width: 100%; height: 100%; }
+.hotspot-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.sci-stage.loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 32%,
+    rgba(232, 201, 106, 0.045) 46%,
+    rgba(232, 201, 106, 0.12) 50%,
+    rgba(232, 201, 106, 0.045) 54%,
+    transparent 68%
+  );
+  transform: translateX(-100%);
+  animation: sci-shimmer 1.05s linear infinite;
+}
+@keyframes sci-shimmer {
+  to { transform: translateX(100%); }
+}
+body:has(#explorer) .sci-layout { margin-top: clamp(8px, 2vw, 24px); }
+
 .hotspot {
   position: absolute;
   transform: translate(-50%, -50%);

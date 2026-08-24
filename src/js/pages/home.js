@@ -1,5 +1,6 @@
 import { initShared, gsap, ScrollTrigger, isMobileish, prefersReduced } from '../main.js'
 import { initHero } from '../three/hero.js'
+import { initOrganExplorer } from '../three/organ-explorer.js'
 
 initShared()
 
@@ -42,5 +43,8 @@ if (journey && track && !isMobileish() && !prefersReduced()) {
     }
   })
 }
+
+const explorerRoot = document.getElementById('explorer')
+if (explorerRoot) initOrganExplorer(explorerRoot)
 
 window.addEventListener('load', () => ScrollTrigger.refresh())
