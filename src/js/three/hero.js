@@ -287,7 +287,7 @@ export function initHero(canvas) {
   halo.position.set(2.0, 0, -2.2)
   scene.add(halo)
 
-  const clusterKey = new THREE.PointLight('#ffca7a', 7, 9, 2)
+  const clusterKey = new THREE.PointLight('#ffca7a', 4, 9, 2)
   clusterKey.position.set(2.0, 1.1, 1.8)
   scene.add(clusterKey)
 
