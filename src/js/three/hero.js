@@ -323,7 +323,7 @@ export function initHero(canvas) {
           const wrap = new THREE.Group()
           obj.scale.setScalar(d.scale)
           wrap.add(obj)
-          wrap.position.set(d.x, d.lane.y, d.lane.z)
+          wrap.position.set(d.x, d.y, d.z)
           flow.add(wrap)
           d.wrap = wrap
           d.obj = obj
