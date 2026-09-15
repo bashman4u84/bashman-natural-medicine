@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { loadGeometry } from './models.js'
-import { organTextures, organMaterial } from './tissues.js'
+import { organTexturesAsync, organMaterial } from './tissues.js'
 import { IS_TOUCH } from './core.js'
 
 /* flesh recipe: wet, translucent, glistening — transmission gives
@@ -52,7 +52,7 @@ function vesselMat(color) {
 
 async function buildLiver() {
   const group = new THREE.Group()
-  const t = organTextures('liver')
+  const t = await organTexturesAsync('liver')
   const mat = fleshMat('liver', t)
   const mesh = new THREE.Mesh(await loadGeometry('liver'), mat)
   mesh.castShadow = true
@@ -103,7 +103,7 @@ async function buildLiver() {
 
 async function buildStomach() {
   const group = new THREE.Group()
-  const t = organTextures('stomach')
+  const t = await organTexturesAsync('stomach')
   const mat = fleshMat('stomach', t)
   const mesh = new THREE.Mesh(await loadGeometry('stomach'), mat)
   mesh.castShadow = true
@@ -126,7 +126,7 @@ async function buildStomach() {
 
 async function buildKidneys() {
   const group = new THREE.Group()
-  const t = organTextures('kidneys')
+  const t = await organTexturesAsync('kidneys')
   const mat = fleshMat('kidneys', t)
   const mesh = new THREE.Mesh(await loadGeometry('kidneys'), mat)
   mesh.castShadow = true
@@ -183,7 +183,7 @@ async function buildKidneys() {
 
 async function buildHeart() {
   const group = new THREE.Group()
-  const t = organTextures('heart')
+  const t = await organTexturesAsync('heart')
   const mat = fleshMat('heart', t)
   const body = new THREE.Mesh(await loadGeometry('heart'), mat)
   body.castShadow = true
@@ -252,7 +252,7 @@ async function buildHeart() {
 
 async function buildPancreas() {
   const group = new THREE.Group()
-  const t = organTextures('pancreas')
+  const t = await organTexturesAsync('pancreas')
   const mat = fleshMat('pancreas', t)
   const mesh = new THREE.Mesh(await loadGeometry('pancreas'), mat)
   mesh.castShadow = true
@@ -263,7 +263,7 @@ async function buildPancreas() {
 
 async function buildIntestines() {
   const group = new THREE.Group()
-  const t = organTextures('intestines')
+  const t = await organTexturesAsync('intestines')
   const mat = fleshMat('intestines', t)
   const mesh = new THREE.Mesh(await loadGeometry('intestines'), mat)
   mesh.castShadow = true
@@ -274,7 +274,7 @@ async function buildIntestines() {
 
 async function buildUterus() {
   const group = new THREE.Group()
-  const t = organTextures('uterus')
+  const t = await organTexturesAsync('uterus')
   const mat = fleshMat('uterus', t)
   const mesh = new THREE.Mesh(await loadGeometry('uterus'), mat)
   mesh.castShadow = true

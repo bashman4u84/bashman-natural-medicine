@@ -1,8 +1,7 @@
 import * as THREE from 'three'
 import { initStage, studioLights, driftPoints, glowTexture, IS_TOUCH, REDUCED } from './core.js'
 import { loadGeometry } from './models.js'
-import { makeTile } from './tissues.js'
-import { pomegranateTextures } from './tissues.js'
+import { makeTile, pomegranateTexturesAsync } from './tissues.js'
 
 /* ============================================================
  * hero.js — "The Garden of the Sunnah"
@@ -120,7 +119,7 @@ function phys(opts) {
 
 let _pomTex = null
 function pomegranateTex() {
-  if (!_pomTex) _pomTex = pomegranateTextures()
+  if (!_pomTex) _pomTex = pomegranateTexturesAsync()
   return _pomTex
 }
 
@@ -128,7 +127,7 @@ function pomegranateTex() {
 const BUILDERS = {
   pomegranate: async () => {
     const g = new THREE.Group()
-    const t = pomegranateTex()
+    const t = await pomegranateTex()
     const rind = new THREE.Mesh(await loadGeometry('pomegranate', 'rind'), phys({
       map: t.map, bumpMap: t.bump, bumpScale: 0.26, color: '#ffffff',
       roughness: 0.58, clearcoat: 0.22, clearcoatRoughness: 0.8,
@@ -291,8 +290,20 @@ const STILL_LIFE = [
   { key: 'leaf', pos: [-2.6, 1.25, -1.4], scale: 0.24, drift: 0.09, tilt: [0.5, 0.2, -0.2] }
 ]
 
-export function initHero(canvas) {
-  const stage = initStage(canvas, { fov: 40, camPos: [1.9, 0.05, 5.7], shadows: false, exposure: 1.0 })
+/* The still-life is authored around x≈+2 for the old full-bleed
+ * layout. In 'stage' framing (the arch panel) we shift the whole
+ * flow back so the cluster sits dead-center in a portrait frame. */
+const STAGE_CX = 2.05
+
+export function initHero(canvas, { framing = 'full' } = {}) {
+  const staged = framing === 'stage'
+  const stage = initStage(canvas, {
+    fov: staged ? 38 : 40,
+    camPos: staged ? [0, 0.02, 6.1] : [1.9, 0.05, 5.7],
+    shadows: false,
+    exposure: 1.0,
+    maxDPR: 1.6 /* the arch is small — no need to pay for retina×2 pixels */
+  })
   const { scene, camera } = stage
   const rig = studioLights(scene)
   rig.rim.intensity = 0.7
@@ -309,7 +320,7 @@ export function initHero(canvas) {
     })
   )
   halo.scale.setScalar(5.2)
-  halo.position.set(2.05, 0.05, -2.3)
+  halo.position.set(staged ? 0 : 2.05, 0.05, -2.3)
   scene.add(halo)
 
   /* pedestal slab — a light stone disc grounds the still-life */
@@ -326,12 +337,12 @@ export function initHero(canvas) {
   slab.position.y = 0.012
   const slabGroup = new THREE.Group()
   slabGroup.add(slabRim, slab)
-  const mobile0 = typeof innerWidth !== 'undefined' && innerWidth < 900
-  slabGroup.position.set(mobile0 ? 0.95 : 1.9, mobile0 ? -2.18 : -1.2, 0.12)
+  const mobile0 = !staged && typeof innerWidth !== 'undefined' && innerWidth < 900
+  slabGroup.position.set(staged ? -0.12 : mobile0 ? 0.95 : 1.9, mobile0 ? -2.18 : -1.2, 0.12)
   scene.add(slabGroup)
 
   const clusterKey = new THREE.PointLight('#ffca7a', 2.6, 9, 2)
-  clusterKey.position.set(2.0, 1.1, 1.8)
+  clusterKey.position.set(staged ? 0.05 : 2.0, 1.1, 1.8)
   scene.add(clusterKey)
 
   const dust = driftPoints({ count: IS_TOUCH ? 30 : 60, colors: ['#c9a227', '#3fa372', '#c9a227'], size: 0.04, rMin: 1.6, rMax: 3.4 })
@@ -342,9 +353,9 @@ export function initHero(canvas) {
   scene.add(flow)
   const drifters = []
   const rand = rng(4242)
-  const mobile = (typeof innerWidth !== 'undefined' && innerWidth < 900)
+  const mobile = !staged && typeof innerWidth !== 'undefined' && innerWidth < 900
   for (const def of STILL_LIFE) {
-    if (mobile && def.drift) continue
+    if ((mobile || staged) && def.drift) continue
     const p = def.pos
     drifters.push({
       key: def.key,
@@ -363,22 +374,26 @@ export function initHero(canvas) {
     })
   }
 
-  /* load part chunks one by one; each joins the flow as it arrives */
+  /* load part chunks one by one; each joins the flow as it arrives.
+   * Kickoffs are staggered so chunk decodes never pile up in a
+   * single frame — the garden assembles without a stutter. */
   if (!REDUCED) {
-    for (const d of drifters) {
-      d.builder()
-        .then((obj) => {
-          const wrap = new THREE.Group()
-          obj.scale.setScalar(d.scale)
-          wrap.add(obj)
-          wrap.position.set(d.x, d.y, d.z)
-          flow.add(wrap)
-          d.wrap = wrap
-          d.obj = obj
-          if (!window.__hero3dAt) window.__hero3dAt = performance.now()
-        })
-        .catch((e) => console.error('[hero:ingredient ' + d.key + ']', e))
-    }
+    drifters.forEach((d, i) => {
+      setTimeout(() => {
+        d.builder()
+          .then((obj) => {
+            const wrap = new THREE.Group()
+            obj.scale.setScalar(d.scale)
+            wrap.add(obj)
+            wrap.position.set(d.x, d.y, d.z)
+            flow.add(wrap)
+            d.wrap = wrap
+            d.obj = obj
+            if (!window.__hero3dAt) window.__hero3dAt = performance.now()
+          })
+          .catch((e) => console.error('[hero:ingredient ' + d.key + ']', e))
+      }, i * 110)
+    })
   }
 
   let scrollP = 0
@@ -394,7 +409,7 @@ export function initHero(canvas) {
     mx += (tmx - mx) * 0.045
     my += (tmy - my) * 0.045
 
-    flow.position.x = mx * 0.3
+    flow.position.x = (staged ? -STAGE_CX : 0) + mx * 0.3
     flow.position.y = -my * 0.18 - scrollP * 0.9
     flow.rotation.z = mx * 0.012
 
@@ -414,10 +429,16 @@ export function initHero(canvas) {
     dust.position.y = -scrollP * 0.5
     halo.material.opacity = 0.13 * (1 - scrollP * 0.6)
 
-    const mview = typeof innerWidth !== 'undefined' && innerWidth < 900
-    camera.position.x = (mview ? 0.85 : 1.9) + mx * (mview ? 0.14 : 0.22)
-    camera.position.y = (mview ? 0.0 : 0.08) - my * 0.16 + scrollP * 0.3
-    camera.lookAt(mview ? 0.85 : 1.86, (mview ? -0.42 : 0.2) + scrollP * 0.9, 0)
+    if (staged) {
+      camera.position.x = mx * 0.2
+      camera.position.y = 0.04 - my * 0.15 + scrollP * 0.3
+      camera.lookAt(0, -0.06 + scrollP * 0.9, 0)
+    } else {
+      const mview = typeof innerWidth !== 'undefined' && innerWidth < 900
+      camera.position.x = (mview ? 0.85 : 1.9) + mx * (mview ? 0.14 : 0.22)
+      camera.position.y = (mview ? 0.0 : 0.08) - my * 0.16 + scrollP * 0.3
+      camera.lookAt(mview ? 0.85 : 1.86, (mview ? -0.42 : 0.2) + scrollP * 0.9, 0)
+    }
   })
 
   return {

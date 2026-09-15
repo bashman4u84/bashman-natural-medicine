@@ -54,6 +54,35 @@ function noiseCanvas(size, seed, fn) {
   return c
 }
 
+/* async twin: identical pixels, but yields to the main thread every
+ * few rows so painting a full PBR set never freezes scrolling */
+const yieldMain = () => new Promise((r) => setTimeout(r, 0))
+async function noiseCanvasAsync(size, seed, fn, yieldEvery = 48) {
+  const c = document.createElement('canvas')
+  c.width = c.height = size
+  const ctx = c.getContext('2d')
+  const img = ctx.createImageData(size, size)
+  const data = img.data
+  const ln = makeNoise(seed, 8)
+  const hn = makeNoise(seed + 7919, 8)
+  const cn = makeNoise(seed + 104729, 8)
+  for (let y = 0; y < size; y++) {
+    const v = y / size
+    for (let x = 0; x < size; x++) {
+      const u = x / size
+      const l = fbm(ln, u, v, 0.37)
+      const m = fbm(hn, u * 1.9, v * 1.9, 0.71)
+      const c2 = fbm(cn, u * 4.1, v * 4.1, 0.9)
+      const o = fn(u, v, l, m, c2)
+      const p = (y * size + x) * 4
+      data[p] = o[0]; data[p + 1] = o[1]; data[p + 2] = o[2]; data[p + 3] = 255
+    }
+    if (y % yieldEvery === yieldEvery - 1) await yieldMain()
+  }
+  ctx.putImageData(img, 0, 0)
+  return c
+}
+
 /* ---------- stroke painters (wrapped, seamless) ---------- */
 export function paintVeins(ctx, size, { color = 'rgba(70,20,18,0.5)', count = 7, seed = 3, width = 2.2, len = 0.26 } = {}) {
   const rand = mulberry32(seed)
@@ -138,7 +167,7 @@ const STROKES = {
 
 /* ---------- full organ PBR texture set (cached) ---------- */
 const _texCache = new Map()
-export function organTextures(key, { size = 1024, bumpSize = 512 } = {}) {
+export function organTextures(key, { size = 512, bumpSize = 256 } = {}) {
   if (_texCache.has(key)) return _texCache.get(key)
   const r = RECIPES[key] || RECIPES[key.replace(/s$/, '')]
   const seed = 100 + (key.length * 37) % 900
@@ -168,6 +197,47 @@ export function organTextures(key, { size = 1024, bumpSize = 512 } = {}) {
   return set
 }
 
+/* async variant — the one the explorer and the warmer should use.
+ * Same cached result, but the painting never blocks the main thread
+ * for more than a few milliseconds at a time. */
+const _texAsyncCache = new Map()
+export function organTexturesAsync(key, { size = 512, bumpSize = 256 } = {}) {
+  if (_texCache.has(key)) return Promise.resolve(_texCache.get(key))
+  if (_texAsyncCache.has(key)) return _texAsyncCache.get(key)
+  const p = (async () => {
+    const r = RECIPES[key] || RECIPES[key.replace(/s$/, '')]
+    const seed = 100 + (key.length * 37) % 900
+
+    const mapCanvas = await noiseCanvasAsync(size, seed, (u, v, l, m, c2) => {
+      const col = r.color(u, v, l, m, c2)
+      return [col[0] * 255, col[1] * 255, col[2] * 255]
+    })
+    await yieldMain()
+    const bumpCanvas = await noiseCanvasAsync(bumpSize, seed + 7, (u, v, l, m, c2) => {
+      const h = r.bump(u, v, l, m, c2)
+      return [h * 255, h * 255, h * 255]
+    })
+    await yieldMain()
+    const roughCanvas = await noiseCanvasAsync(bumpSize, seed + 13, (u, v, l, m, c2) => {
+      const h = r.roughness ? r.roughness(u, v, l, m, c2) : 0.5
+      return [h * 255, h * 255, h * 255]
+    })
+
+    const mctx = mapCanvas.getContext('2d')
+    const rctx = roughCanvas.getContext('2d')
+    STROKES[key]?.(mctx, rctx, size)
+
+    const map = makeTile(size, (ctx) => ctx.drawImage(mapCanvas, 0, 0), { srgb: true })
+    const bump = makeTile(bumpSize, (ctx) => ctx.drawImage(bumpCanvas, 0, 0), { srgb: false })
+    const roughness = makeTile(bumpSize, (ctx) => ctx.drawImage(roughCanvas, 0, 0), { srgb: false })
+    const set = { map, bump, roughness }
+    _texCache.set(key, set)
+    return set
+  })()
+  _texAsyncCache.set(key, p)
+  return p
+}
+
 /* keep the old per-organ names for any existing callers */
 export const liverTextures = (s = 512) => organTextures('liver', { size: s })
 export const stomachTextures = (s = 512) => organTextures('stomach', { size: s })
@@ -189,6 +259,16 @@ export function pomegranateTextures(size = 512) {
     return [h * 255, h * 255, h * 255]
   })
   const ctx = mapCanvas.getContext('2d')
+  paintPomegranateSpecks(ctx, size)
+  const set = {
+    map: makeTile(size, (c) => c.drawImage(mapCanvas, 0, 0), { srgb: true }),
+    bump: makeTile(size, (c) => c.drawImage(bumpCanvas, 0, 0), { srgb: false })
+  }
+  _texCache.set(key, set)
+  return set
+}
+
+function paintPomegranateSpecks(ctx, size) {
   const rand = mulberry32(93)
   wrap3x3(size, (ox, oy) => {
     ctx.save()
@@ -206,12 +286,33 @@ export function pomegranateTextures(size = 512) {
     }
     ctx.restore()
   })
-  const set = {
-    map: makeTile(size, (c) => c.drawImage(mapCanvas, 0, 0), { srgb: true }),
-    bump: makeTile(size, (c) => c.drawImage(bumpCanvas, 0, 0), { srgb: false })
-  }
-  _texCache.set(key, set)
-  return set
+}
+
+let _pomAsync = null
+export function pomegranateTexturesAsync(size = 512) {
+  if (_texCache.has('pomegranate')) return Promise.resolve(_texCache.get('pomegranate'))
+  if (_pomAsync) return _pomAsync
+  _pomAsync = (async () => {
+    const r = RECIPES.pomegranate
+    const mapCanvas = await noiseCanvasAsync(size, 91, (u, v, l, m, c2) => {
+      const col = r.color(u, v, l, m, c2)
+      return [col[0] * 255, col[1] * 255, col[2] * 255]
+    })
+    await yieldMain()
+    const bumpCanvas = await noiseCanvasAsync(size, 92, (u, v, l, m, c2) => {
+      const h = r.bump(u, v, l, m, c2)
+      return [h * 255, h * 255, h * 255]
+    })
+    const ctx = mapCanvas.getContext('2d')
+    paintPomegranateSpecks(ctx, size)
+    const set = {
+      map: makeTile(size, (c) => c.drawImage(mapCanvas, 0, 0), { srgb: true }),
+      bump: makeTile(size, (c) => c.drawImage(bumpCanvas, 0, 0), { srgb: false })
+    }
+    _texCache.set('pomegranate', set)
+    return set
+  })()
+  return _pomAsync
 }
 
 /* ---------- organic-flesh material factory ---------- */

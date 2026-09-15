@@ -16,7 +16,13 @@ export default defineConfig({
         contact: resolve(import.meta.dirname, 'contact.html'),
         'hepatitis-b': resolve(import.meta.dirname, 'hepatitis-b.html'),
         ulcer: resolve(import.meta.dirname, 'ulcer.html'),
-        fibroid: resolve(import.meta.dirname, 'fibroid.html')
+        fibroid: resolve(import.meta.dirname, 'fibroid.html'),
+        hepatitis: resolve(import.meta.dirname, 'hepatitis.html'),
+        'cancer-prevention': resolve(import.meta.dirname, 'cancer-prevention.html'),
+        'male-fertility': resolve(import.meta.dirname, 'male-fertility.html'),
+        'pcos-wellness': resolve(import.meta.dirname, 'pcos-wellness.html'),
+        'immune-booster': resolve(import.meta.dirname, 'immune-booster.html'),
+        '404': resolve(import.meta.dirname, '404.html')
       }
     }
   },

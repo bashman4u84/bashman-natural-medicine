@@ -1,8 +1,8 @@
-import { initShared, gsap } from '../main.js'
+import { gsap } from '../main.js'
 import { initScienceViewer } from './science-viewer.js'
 import { CONDITIONS, CONDITION_ORDER, ORGAN_META } from '../data/conditions.js'
 import { loadGeometry } from './models.js'
-import { organTextures } from './tissues.js'
+import { organTexturesAsync } from './tissues.js'
 
 /* ============================================================
  * organ-explorer.js — the "Why We Get Sick" feature.
@@ -27,8 +27,8 @@ const icons = {
 }
 
 export function initOrganExplorer(root, { initialId = null, hashAware = false } = {}) {
-  initShared()
-
+  /* NOTE: callers own initShared() — calling it here too would
+   * double-init Lenis/GSAP listeners on pages that already did. */
   const q = (sel) => root.querySelector(sel)
   const qa = (sel) => root.querySelectorAll(sel)
 
@@ -136,19 +136,27 @@ export function initOrganExplorer(root, { initialId = null, hashAware = false } 
   }
 
   /* ---------- cache warming: preload every organ's data+textures
-   * so switching conditions never stalls, even on slow devices ---------- */
-  let warmed = false
-  const warm = () => {
-    if (warmed) return
-    warmed = true
-    Promise.allSettled(
-      Object.keys(CONDITIONS).map((k) => {
-        const organ = CONDITIONS[k].organ
-        return Promise.all([loadGeometry(organ), organTextures(organ)])
-      })
+   * so switching conditions never stalls. Done ONE organ per idle
+   * slice (never a burst) — decoding + texture painting are heavy,
+   * and idle-time sequencing keeps scrolling butter-smooth. ---------- */
+  const warmOrgans = [...new Set(Object.values(CONDITIONS).map((c) => c.organ))]
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 400))
+  const warmOne = (i) => {
+    if (i >= warmOrgans.length) return
+    idle(
+      async () => {
+        try {
+          await loadGeometry(warmOrgans[i])
+          await organTexturesAsync(warmOrgans[i])
+        } catch (e) {
+          /* warming is best-effort */
+        }
+        warmOne(i + 1)
+      },
+      { timeout: 2500 }
     )
   }
-  setTimeout(warm, 600)
+  warmOne(0)
 
   return { selectCondition }
 }

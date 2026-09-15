@@ -39,16 +39,18 @@ export function initStage(canvas, opts = {}) {
     shadows = !IS_TOUCH,
     alpha = true,
     exposure = 1.05,
-    camPos = [0, 0.15, 4.2]
+    camPos = [0, 0.15, 4.2],
+    maxDPR = IS_TOUCH ? 1.8 : 2
   } = opts
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
     alpha,
+    stencil: false, /* no stencil work in these scenes — smaller, faster framebuffer */
     powerPreference: 'high-performance'
   })
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, IS_TOUCH ? 1.8 : 2))
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxDPR))
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = exposure
   if (shadows) {

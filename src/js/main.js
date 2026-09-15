@@ -137,17 +137,76 @@ function initCounters() {
   nums.forEach((n) => io.observe(n))
 }
 
+/* ---------- ad pixel lead tracking (Meta + TikTok) ----------
+ * Safe no-op if the pixels aren't loaded on the page (IDs are
+ * placeholders in each landing page's <head>). */
+function trackLead(label) {
+  try {
+    if (typeof fbq === 'function') { fbq('track', 'Lead', { content_name: label || 'consultation' }) }
+    if (window.ttq) { ttq.track('SubmitForm', { content_name: label || 'consultation' }) }
+  } catch (e) { /* pixels are best-effort */ }
+}
+function initPixelTracking() {
+  document.querySelectorAll('.wa-track').forEach((a) =>
+    a.addEventListener('click', () => trackLead('whatsapp'))
+  )
+  document.querySelectorAll('form[data-fake]').forEach((form) => {
+    form.addEventListener('submit', () => {
+      const cond = form.querySelector('[name="condition"]')?.value
+        || document.body.dataset.landing || ''
+      trackLead('form-' + (cond || 'consultation'))
+    }, { once: true })
+  })
+}
+
 function initForms() {
   document.querySelectorAll('form[data-fake]').forEach((form) => {
-    form.addEventListener('submit', (e) => {
+    const showSuccess = () => {
+      const hideables = form.matches('.form-fields')
+        ? [form]
+        : [...form.querySelectorAll('.form-fields')]
+      hideables.forEach((f) => (f.style.display = 'none'))
+      const ok = form.parentElement.querySelector('.form-success') || form.querySelector('.form-success')
+      if (ok) ok.classList.add('show')
+    }
+    form.addEventListener('submit', async (e) => {
       e.preventDefault()
       if (!form.checkValidity()) {
         form.reportValidity()
         return
       }
-      form.querySelectorAll('.form-fields').forEach((f) => (f.style.display = 'none'))
-      const ok = form.parentElement.querySelector('.form-success') || form.querySelector('.form-success')
-      if (ok) ok.classList.add('show')
+      const btn = form.querySelector('[type="submit"]')
+      const oldLabel = btn?.textContent
+      if (btn) {
+        btn.disabled = true
+        btn.textContent = 'Sending…'
+      }
+      form.querySelector('.form-error')?.remove()
+      try {
+        const fd = new FormData(form)
+        fd.set('page', location.pathname)
+        if (!fd.get('condition') && document.body.dataset.landing) {
+          fd.set('condition', document.body.dataset.landing + ' (landing page)')
+        }
+        const res = await fetch('/submit-consultation.php', {
+          method: 'POST',
+          body: fd,
+          headers: { Accept: 'application/json' }
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok || data.ok === false) throw new Error(data.error || 'send failed')
+        showSuccess()
+      } catch (err) {
+        console.error('[form]', err)
+        if (btn) {
+          btn.disabled = false
+          btn.textContent = oldLabel
+        }
+        const errEl = document.createElement('p')
+        errEl.className = 'form-error'
+        errEl.textContent = 'Couldn’t send automatically — please tap the WhatsApp button and we’ll take it from there.'
+        form.appendChild(errEl)
+      }
     })
   })
 }
@@ -167,6 +226,7 @@ export function initShared() {
   revealAll()
   initCounters()
   initForms()
+  initPixelTracking()
   const year = document.getElementById('year')
   if (year) year.textContent = new Date().getFullYear()
 }
