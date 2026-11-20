@@ -1,0 +1,17 @@
+{
+  "voice_id": "aa2cafe9-97ba-4052-ac3c-875000f95212",
+  "voice_name": "Zander - Composed Advisor (South African, masculine)",
+  "model": "sonic-3",
+  "speed": 1.03,
+  "lines": [
+    { "id": "s1_hook",        "text": "Hepatitis B is not a life sentence.",                                                          "emotion": "calm" },
+    { "id": "s2_symptoms",    "text": "Tired all day. Yellow eyes. Pain on your right side. Fear every time you remember your status.", "emotion": "sympathetic" },
+    { "id": "s3_wait",        "text": "They told you to monitor and wait. But the virus does not wait.",                               "emotion": "calm" },
+    { "id": "s4_turn",        "text": "Bashman Natural Medicine takes a different road: prophetic medicine, hijama, and proven herbs.", "emotion": "confident" },
+    { "id": "s5_protocol",    "text": "Cleanse and protect. Fight and rebuild. Then restore, and confirm it with fresh lab tests.",   "emotion": "confident" },
+    { "id": "s6_intro",       "text": "Watch what happened to one of them.",                                                          "emotion": "calm" },
+    { "id": "s7_testimonies", "text": "Undetectable viral load. Jaundice gone in five weeks. Negative, twice, six months apart.",     "emotion": "confident" },
+    { "id": "s8_care",        "text": "Treated on WhatsApp, wherever you are. Remedies couriered to your door.",                      "emotion": "calm" },
+    { "id": "s9_cta",         "text": "Your first consultation is free. Message Bashman today.",                                      "emotion": "confident" }
+  ]
+}

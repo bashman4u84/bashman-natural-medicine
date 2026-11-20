@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bashman Natural Medicine — Hepatitis B Ad</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{
+  --forest:#04100C; --forest2:#0A1D18; --pine:#12382A; --emerald:#1E6A4B;
+  --leaf:#3FA372; --brand:#A2D171; --mint:#DCEFE3; --gold:#C9A227; --gold2:#E8C96A;
+  --cream:#F7F2E9; --ink:#0A3A2F; --red:#E4593F;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
+body{font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0;width:1080px;height:1920px;overflow:hidden;background:var(--forest);color:var(--cream)}
+.layer{position:absolute;inset:0}
+.serif{font-family:'Fraunces',Georgia,serif;font-variation-settings:'opsz' 144;font-weight:600;letter-spacing:-0.022em;line-height:1.06}
+.kicker{display:flex;align-items:center;gap:16px;font-size:23px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--gold2)}
+.kicker i{display:block;width:46px;height:2px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px}
+.card{background:linear-gradient(150deg,rgba(226,245,233,.085),rgba(226,245,233,.028));border:1.5px solid rgba(220,239,227,.14);border-radius:20px}
+.chip{display:inline-flex;align-items:center;gap:9px;font-size:21px;font-weight:700;letter-spacing:.01em;padding:11px 20px;border-radius:999px;background:rgba(162,209,113,.13);border:1px solid rgba(162,209,113,.34);color:var(--mint)}
+#grain{position:absolute;inset:-40px;opacity:.05;mix-blend-mode:overlay;pointer-events:none}
+#vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(126% 80% at 50% 46%,transparent 46%,rgba(0,0,0,.46) 100%)}
+.brandchip{display:flex;align-items:center;gap:14px}
+.brandchip img{height:46px;display:block}
+.brandchip span{font-size:19px;font-weight:800;letter-spacing:.23em;color:rgba(220,239,227,.72)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="bg"></div>
+  <div class="layer" id="scenes"></div>
+  <div class="layer" id="vidlayer" style="opacity:0"></div>
+  <div class="layer" id="proofchrome" style="opacity:0"></div>
+  <div class="layer" id="chrome"></div>
+  <div id="grain"></div>
+  <div id="vig"></div>
+</div>
+<script>
+/* ============================ easing ============================ */
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const prog=(T,s,d)=>clamp((T-s)/d,0,1);
+const eOut=t=>1-Math.pow(1-t,3);
+const eIn=t=>t*t*t;
+const eOutBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+const eOutExpo=t=>t>=1?1:1-Math.pow(2,-10*t);
+const eIO=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ENTER=(T,s,d=.65)=>eOut(prog(T,s,d));
+const POP=(T,s,d=.6)=>eOutBack(prog(T,s,d));
+const EXIT=(T,s,d=.4)=>eIn(prog(T,s,d));
+const vis=(T,a,b,fi=.45,fo=.4)=>ENTER(T,a,fi)*(1-EXIT(T,b-fo,fo));
+const smooth=t=>t*t*(3-2*t);
+const XF=0.40;                                   // scene crossfade length
+/* Full opacity between inAt and outAt; complementary ramps either side so
+   consecutive scenes always sum to 1 — no dip to the bare backdrop. */
+function sceneO(T,inAt,outAt){
+  let o=1;
+  if(T<inAt) o=smooth(clamp((T-inAt+XF)/XF,0,1));
+  if(T>outAt) o=Math.min(o,1-smooth(clamp((T-outAt)/XF,0,1)));
+  return o;
+}
+const SB=0.40;                                   // inner-animation lead
+
+/* ============================ timeline ============================ */
+const TL={
+  hook:     {s: 0.0,  e: 3.4},
+  symptoms: {s: 3.4,  e: 9.9},
+  wait:     {s: 9.9,  e:13.9},
+  turn:     {s:13.9,  e:19.7},
+  protocol: {s:19.7,  e:25.3},
+  proofin:  {s:25.3,  e:27.7},
+  proof:    {s:27.7,  e:44.3},
+  quotes:   {s:44.3,  e:49.8},
+  care:     {s:49.8,  e:53.9},
+  cta:      {s:53.9,  e:59.5},
+};
+const DURATION=59.5;
+const PROOF_SRC_IN=0.4, PROOF_LEN=16.6;
+window.__DURATION=DURATION;
+
+/* ============================ backdrop ============================ */
+const BG=document.getElementById('bg');
+function glow(x,y,r,c,o){return `<div style="position:absolute;left:${x-r}px;top:${y-r}px;width:${r*2}px;height:${r*2}px;border-radius:50%;background:radial-gradient(circle,${c} 0%,transparent 66%);opacity:${o}"></div>`;}
+function renderBG(T){
+  const w=T*0.20;
+  const warm=ENTER(T,13.6,1.6)*(1-EXIT(T,44.2,.8));
+  const cool=ENTER(T,0,1.2)*(1-ENTER(T,13.4,1.0));
+  const cta=ENTER(T,53.6,1.0);
+  const px=540+Math.sin(w*0.9)*90, py=1150+Math.cos(w*0.75)*140;
+  BG.innerHTML=`
+  <div style="position:absolute;inset:0;background:radial-gradient(140% 90% at 50% 8%,#0D241D 0%,#071813 42%,#04100C 100%)"></div>
+  ${glow(px,py,780,'#14513A',.55+.2*warm)}
+  ${glow(180+Math.cos(w)*120,430+Math.sin(w*1.1)*130,560,'#0F3A2A',.5*cool+.18)}
+  ${glow(920,320+Math.sin(w*.8)*120,520,'#2A2410',.55*warm)}
+  ${glow(560,1730,640,'#1E6A4B',.10+.14*warm)}
+  ${glow(560,900,980,'#C9A227',.20*cta)}
+  <div style="position:absolute;inset:0;opacity:.32;background-image:radial-gradient(rgba(162,209,113,.30) 1.4px,transparent 1.6px);background-size:52px 52px;background-position:${Math.round(-T*7)}px 0px"></div>
+  <div style="position:absolute;left:50%;top:${-560+Math.sin(w*.5)*30}px;transform:translateX(-50%) rotate(${-12+Math.sin(T*.10)*3}deg);opacity:${.022+.016*warm};filter:blur(1.5px);
+       width:1420px;height:1420px;background:url(assets/mark-cream.png) center/contain no-repeat"></div>`;
+}
+
+/* ============================ chrome ============================ */
+const CHROME=document.getElementById('chrome');
+function renderChrome(T){
+  const o=vis(T,0.75,26.2,.6,.5)*(1-EXIT(T,54.05,.5));
+  CHROME.innerHTML=`
+    <div style="position:absolute;left:74px;top:74px;opacity:${o}" class="brandchip">
+      <img src="assets/mark-cream.png" alt=""><span>BASHMAN NATURAL MEDICINE</span>
+    </div>
+    <div style="position:absolute;inset:0;pointer-events:none;background:rgba(247,242,233,${(Math.max(0,1-Math.abs(T-27.80)/0.085)*0.32).toFixed(4)});opacity:${ENTER(T,25.4,.1)*(1-EXIT(T,28.4,.3))}"></div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:7px;background:rgba(220,239,227,.10)">
+      <div style="height:100%;width:${(T/DURATION*100).toFixed(3)}%;background:linear-gradient(90deg,var(--gold),var(--gold2))"></div>
+    </div>`;
+}
+
+/* ============================ 1 · HOOK ============================ */
+function scHook(T){
+  const {s,e}=TL.hook; const o=sceneO(T,0.46,3.18); if(o<=0) return '';
+  const Sb=s-SB;
+  const k1=ENTER(T,s+.52,.7), k2=ENTER(T,s+.72,.8), k3=ENTER(T,s+.94,.85);
+  const ruleW=eOut(prog(T,s+1.15,1.1));
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;left:0;right:0;top:430px;height:620px">
+      ${glow(540,720,470,'#1E6A4B',.28)}
+      <div style="position:absolute;left:50%;top:${60-(1-mP)*40}px;transform:translateX(-50%) scale(${.86+.14*mP});
+        width:430px;height:430px;background:url(assets/mark-brand.png) center/contain no-repeat;
+        filter:drop-shadow(0 0 62px rgba(162,209,113,.30))"></div>
+    </div>
+    <div style="position:absolute;left:96px;right:96px;top:1128px;text-align:center">
+      <div class="kicker" style="justify-content:center;opacity:${k1}">
+        <i style="width:38px;background:linear-gradient(90deg,transparent,var(--gold))"></i>PROPHETIC · HERBAL · HIJAMA<i style="width:38px;background:linear-gradient(90deg,var(--gold),transparent)"></i>
+      </div>
+      <div class="serif" style="margin-top:34px;font-size:104px;opacity:${k2};transform:translateY(${(1-k2)*38}px)">Hepatitis B is not</div>
+      <div class="serif" style="font-size:118px;opacity:${k3};transform:translateY(${(1-k3)*38}px)">a <em style="font-style:italic;color:var(--gold2)">life sentence</em>.</div>
+      <div style="margin:44px auto 0;height:3px;width:${ruleW*340}px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);border-radius:3px"></div>
+    </div>
+    <div style="position:absolute;left:96px;right:96px;bottom:214px;display:flex;justify-content:center;gap:16px;opacity:${ENTER(T,s+1.5,.8)}">
+      <span class="chip">Since 2011</span>
+      <span class="chip">500+ hepatitis B stories</span>
+      <span class="chip">Nationwide WhatsApp care</span>
+    </div>
+  </div>`;
+}
+
+/* ============================ 2 · SYMPTOMS ============================ */
+const ICONS={
+  moon:'<path d="M20.5 14.4A8.6 8.6 0 0 1 9.6 3.5a8.9 8.9 0 1 0 10.9 10.9Z"/>',
+  eye:'<path d="M2 12s3.7-6.4 10-6.4S22 12 22 12s-3.7 6.4-10 6.4S2 12 2 12Z"/><circle cx="12" cy="12" r="2.9"/>',
+  drop:'<path d="M12 3.2s6.3 6.4 6.3 10.6A6.3 6.3 0 0 1 5.7 13.8C5.7 9.6 12 3.2 12 3.2Z"/>',
+  pulse:'<path d="M2.5 12.5h4l2.2-6 3.4 12 2.6-8 1.6 4h5.2"/>',
+  shield:'<path d="M12 2.8 4.6 6v6c0 4.7 3.2 8.4 7.4 9.4 4.2-1 7.4-4.7 7.4-9.4V6L12 2.8Z"/><path d="M12 8.4v7M8.5 11.9h7"/>',
+};
+function scSymptoms(T){
+  const {s,e}=TL.symptoms; const o=sceneO(T,3.58,9.68); if(o<=0) return '';
+  const Sb=s-SB;
+    ['moon','Tired even after a full night&rsquo;s sleep'],
+    ['eye','Yellow tinge in your eyes or skin'],
+    ['drop','Dark urine, pale stool'],
+    ['pulse','Pain or swelling on the right side'],
+    ['shield','Fear every time you remember your status'],
+  ];
+  const item=(r,i)=>{
+    const at=Sb+.72+i*.44, p=POP(T,at,.62), op=ENTER(T,at,.32);
+    const hot=i===rows.length-1;
+    return `<div class="card" style="display:flex;align-items:center;gap:26px;padding:${hot?'28px 30px':'25px 30px'};margin-bottom:${hot?0:19}px;
+      opacity:${op};transform:translateX(${(1-p)*70}px) scale(${.97+.03*p});
+      ${hot?`background:linear-gradient(120deg,rgba(201,162,39,.20),rgba(201,162,39,.06));border-color:rgba(232,201,106,.55);
+        box-shadow:0 0 52px rgba(201,162,39,${.16+.10*Math.sin((T-at)*2.2)})`:''}">
+      <div style="width:62px;height:62px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
+        background:${hot?'rgba(232,201,106,.18)':'rgba(162,209,113,.13)'};border:1.5px solid ${hot?'rgba(232,201,106,.55)':'rgba(162,209,113,.30)'}">
+        <svg width="31" height="31" viewBox="0 0 24 24" fill="none" stroke="${hot?'#E8C96A':'#A2D171'}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[r[0]]}</svg></div>
+      <div style="font-size:${hot?35:34}px;font-weight:${hot?700:600};color:${hot?'#F3E4BE':'var(--cream)'};line-height:1.25">${r[1]}</div>
+    </div>`;
+  };
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;left:88px;right:88px;top:352px">
+      <div class="kicker" style="opacity:${ENTER(T,Sb+.20,.6)}"><i></i>Sound familiar?</div>
+      <div class="serif" style="margin-top:30px;font-size:84px;opacity:${ENTER(T,Sb+.28,.8)};transform:translateY(${(1-ENTER(T,Sb+.28,.8))*30}px)">
+        Your liver has been<br><em style="font-style:italic;color:var(--leaf)">crying for help</em>.</div>
+      <div style="margin-top:58px">${rows.map(item).join('')}</div>
+    </div>
+  </div>`;
+}
+
+/* ============================ 3 · THE WAIT ============================ */
+function scWait(T){
+  const {s,e}=TL.wait; const o=sceneO(T,10.08,13.68); if(o<=0) return '';
+  const Sb=s-SB;
+  const grow=eOutExpo(prog(T,Sb+1.15,2.0));
+  const N=12, G=46;
+  const dots=[];
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const idx=y*N+x, th=1-idx/(N*N-1);
+    const on=clamp((grow-th*0.55)*2.2,0,1);
+    if(on<=0.01) continue;
+    const d=Math.hypot(x-(N-1)/2,y-(N-1)/2)/(N*0.72);
+    dots.push(`<span style="position:absolute;left:${x*G}px;top:${y*G}px;width:13px;height:13px;border-radius:50%;
+      background:${d>.55?'#E4593F':'#A2D171'};opacity:${on*(0.28+0.72*(1-d))};transform:scale(${on})"></span>`);
+  }
+  const count=Math.round(2_000_000*eOut(prog(T,Sb+1.3,2.2)));
+  const cO=ENTER(T,Sb+1.35,.7);
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;left:88px;right:88px;top:378px;text-align:center">
+      <div class="kicker" style="justify-content:center;opacity:${a}"><i style="width:34px;background:linear-gradient(90deg,transparent,var(--gold))"></i>What you were told<i style="width:34px;background:linear-gradient(90deg,var(--gold),transparent)"></i></div>
+      <div class="serif" style="margin-top:34px;font-size:96px;opacity:${a};transform:translateY(${(1-a)*32}px)">
+        &ldquo;Monitor it.<br>And <em style="font-style:italic;color:var(--gold2)">wait</em>.&rdquo;</div>
+      <div style="margin-top:46px;font-size:37px;font-weight:600;color:rgba(220,239,227,.80);opacity:${b};transform:translateY(${(1-b)*24}px);line-height:1.5">
+        But the virus does not wait.<br>It copies itself <strong style="color:var(--red)">millions of times a day</strong>.</div>
+    </div>
+    <div style="position:absolute;left:50%;top:1082px;transform:translateX(-50%);width:${N*G}px;height:${N*G}px;opacity:${ENTER(T,Sb+1.0,.8)}">${dots.join('')}</div>
+    <div style="position:absolute;left:88px;right:88px;bottom:196px;text-align:center;opacity:${cO};transform:translateY(${(1-cO)*22}px)">
+      <div style="display:inline-flex;align-items:baseline;gap:18px;padding:24px 44px;border-radius:20px;background:rgba(228,89,63,.13);border:1.5px solid rgba(228,89,63,.42)">
+        <span class="serif" style="font-size:82px;color:#F0A08C;font-variant-numeric:tabular-nums">${count.toLocaleString('en-US')}</span>
+        <span style="font-size:25px;font-weight:800;letter-spacing:.14em;color:rgba(240,160,140,.9)">VIRAL COPIES / DAY</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ 4 · THE TURN ============================ */
+function scTurn(T){
+  const {s,e}=TL.turn; const o=sceneO(T,14.08,19.48); if(o<=0) return '';
+  const Sb=s-SB;
+  const sweep=eIO(prog(T,Sb+.25,1.5));
+  const h1=ENTER(T,Sb+.82,.85), pills=ENTER(T,Sb+1.22,.7), tag=ENTER(T,Sb+1.9,.7);
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;inset:0;opacity:${.42*ENTER(T,Sb+.3,1.2)};background:radial-gradient(780px 640px at 50% 44%,rgba(201,162,39,.30),transparent 72%)"></div>
+    <div style="position:absolute;left:${-540+sweep*1620}px;top:-260px;width:330px;height:2440px;transform:rotate(16deg);opacity:${Math.sin(sweep*Math.PI)*.30};
+      background:linear-gradient(to right,transparent,rgba(232,201,106,.9),transparent)"></div>
+    <div style="position:absolute;left:88px;right:88px;top:482px;text-align:center">
+      <div class="kicker" style="justify-content:center;opacity:${a}"><i style="width:34px;background:linear-gradient(90deg,transparent,var(--gold))"></i>A different road<i style="width:34px;background:linear-gradient(90deg,var(--gold),transparent)"></i></div>
+      <div style="margin-top:50px;opacity:${lock};transform:scale(${.90+.10*lock})">
+        <img src="assets/lockup-cream.png" style="width:560px;display:block;margin:0 auto;filter:drop-shadow(0 22px 60px rgba(0,0,0,.55))">
+      </div>
+      <div class="serif" style="margin-top:52px;font-size:72px;opacity:${h1};transform:translateY(${(1-h1)*26}px)">
+        Healing, rooted in the <em style="font-style:italic;color:var(--gold2)">Sunnah</em>.</div>
+      <div style="margin-top:48px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:${pills}">
+        ${['Prophetic medicine','Hijama therapy','Proven herbal science'].map((p,i)=>{const at=Sb+1.22+i*.26, q=POP(T,at,.6);
+          return `<span class="chip" style="transform:translateY(${(1-q)*26}px) scale(${.94+.06*q})">${p}</span>`;}).join('')}
+      </div>
+      <div style="margin-top:120px;font-size:25px;font-weight:800;letter-spacing:.20em;color:rgba(220,239,227,.62);opacity:${tag}">SINCE 2011 · NIGERIA · WORLDWIDE CONSULT</div>
+    </div>
+  </div>`;
+}
+
+/* ============================ 5 · PROTOCOL ============================ */
+const PHASES=[
+  {n:'01',t:'Cleanse &amp; Protect',w:'Weeks 1–4',c:'Hijama cupping · bitter detox infusions · liver-friendly nutrition'},
+  {n:'02',t:'Fight &amp; Rebuild',w:'Weeks 5–12',c:'Phyllanthus niruri · black seed + raw honey · milk thistle'},
+  {n:'03',t:'Restore &amp; Confirm',w:'Month 4 onward',c:'Guided lab review at 3 &amp; 6 months · immune tonics'},
+];
+function scProtocol(T){
+  const {s,e}=TL.protocol; const o=sceneO(T,19.88,25.08); if(o<=0) return '';
+  const Sb=s-SB;
+    const at=Sb+.62+i*.64, q=POP(T,at,.7), op=ENTER(T,at,.36);
+    const active=T>at+.15&&(i===PHASES.length-1||T<s+.62+(i+1)*.64);
+    return `<div class="card" style="display:flex;gap:28px;align-items:flex-start;padding:40px 34px;margin-bottom:26px;
+      opacity:${op};transform:translateY(${(1-q)*50}px) scale(${.97+.03*q});
+      ${active?`background:linear-gradient(120deg,rgba(63,163,114,.16),rgba(63,163,114,.04));border-color:rgba(162,209,113,.42)`:''}">
+      <div class="serif" style="font-size:64px;line-height:1;color:${active?'var(--gold2)':'rgba(232,201,106,.55)'};min-width:98px">${p.n}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:18px">
+          <div style="font-size:43px;font-weight:800;color:var(--cream);letter-spacing:-.01em">${p.t}</div>
+          <div style="font-size:21px;font-weight:800;letter-spacing:.12em;color:rgba(220,239,227,.58);white-space:nowrap">${p.w}</div>
+        </div>
+        <div style="margin-top:14px;font-size:26px;line-height:1.42;color:rgba(220,239,227,.76)">${p.c}</div>
+      </div>
+    </div>`;
+  };
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;left:88px;right:88px;top:442px">
+      <div class="kicker" style="opacity:${ENTER(T,Sb+.18,.6)}"><i></i>The Hepatitis Recovery Protocol</div>
+      <div class="serif" style="margin-top:28px;font-size:80px;opacity:${ENTER(T,Sb+.26,.8)};transform:translateY(${(1-ENTER(T,Sb+.26,.8))*30}px)">
+        Three phases to a <em style="font-style:italic;color:var(--leaf)">healed liver</em>.</div>
+      <div style="margin-top:58px">${PHASES.map(card).join('')}</div>
+      <div style="margin-top:20px;display:flex;align-items:center;gap:18px;opacity:${ENTER(T,Sb+2.6,.7)}">
+        <div style="width:46px;height:46px;flex:none;border-radius:50%;background:rgba(201,162,39,.18);border:1.5px solid rgba(232,201,106,.5);display:flex;align-items:center;justify-content:center">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#E8C96A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.6l4.4 4.4L19 7.4"/></svg></div>
+        <div style="font-size:27px;color:rgba(220,239,227,.82);font-weight:600">Personalised after your <strong style="color:var(--gold2)">free</strong> consultation · supervised weekly on WhatsApp</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ 6 · PROOF INTRO ============================ */
+function scProofIn(T){
+  const {s,e}=TL.proofin; const o=sceneO(T,25.48,27.62); if(o<=0) return '';
+  const Sb=s-SB;
+  const txtIn=ENTER(T,s+.12,.6), txtOut=EXIT(T,s+1.15,.6);
+  const inset=lerp(250,78,lock), len=lerp(150,116,lock);
+  const bracket=(rot,pos)=>`<div style="position:absolute;${pos};width:${len}px;height:${len}px;
+     border-top:4px solid rgba(232,201,106,${.35+.55*lock});border-left:4px solid rgba(232,201,106,${.35+.55*lock});
+     transform:rotate(${rot}deg);transform-origin:center"></div>`;
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;inset:${inset}px;border-radius:6px;box-shadow:inset 0 0 120px rgba(201,162,39,${.05+.14*lock})"></div>
+    <div style="position:absolute;inset:0">
+      ${bracket(0,`left:${inset}px;top:${inset}px`)}
+      ${bracket(90,`right:${inset}px;top:${inset}px`)}
+      ${bracket(180,`right:${inset}px;bottom:${inset}px`)}
+      ${bracket(270,`left:${inset}px;bottom:${inset}px`)}
+    </div>
+    <div style="position:absolute;left:88px;right:88px;top:760px;text-align:center;opacity:${txtIn*(1-txtOut)};transform:scale(${1+.10*lock})">
+      <div class="kicker" style="justify-content:center"><i style="width:34px;background:linear-gradient(90deg,transparent,var(--gold))"></i>No claims. Just paperwork.<i style="width:34px;background:linear-gradient(90deg,var(--gold),transparent)"></i></div>
+      <div class="serif" style="margin-top:32px;font-size:98px;">Watch what happened<br>to <em style="font-style:italic;color:var(--gold2)">one of them</em>.</div>
+    </div>
+  </div>`;
+}
+
+/* ============================ 7 · PROOF ============================ */
+const VID=document.createElement('video');
+VID.src='video/proof.mp4'; VID.muted=true; VID.playsInline=true; VID.preload='auto';
+VID.style.cssText='position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;display:block;opacity:0';
+const VC=document.createElement('canvas'); VC.width=1080; VC.height=1920;
+VC.style.cssText='position:absolute;inset:0;width:1080px;height:1920px;display:block';
+const VCTX=VC.getContext('2d',{alpha:true});
+const VIDL=document.getElementById('vidlayer');
+VIDL.appendChild(VID); VIDL.appendChild(VC);
+const PCH=document.getElementById('proofchrome');
+window.__vid=VID;
+
+const BEATS=[
+  {t:0.0,  lab:'HEP B SURFACE ANTIGEN · BEFORE',      v:'POSITIVE',      tone:'bad',  rail:'BEFORE'},
+  {t:6.3,  lab:'HEP B SURFACE ANTIGEN · AFTER HERBS', v:'NEGATIVE',      tone:'good', rail:'AFTER'},
+  {t:7.2,  lab:'HBV DNA VIRAL LOAD · BEFORE',         v:546560,          tone:'bad',  rail:'VIRAL LOAD'},
+  {t:9.4,  lab:'HBV DNA VIRAL LOAD · ONE MONTH LATER',v:43.4,            tone:'good', rail:'1 MONTH'},
+  {t:11.4, lab:'MABIFUS LAB · LIMIT OF DETECTION',    v:'UNDETECTABLE',  tone:'good', rail:'UNDETECTABLE'},
+];
+function beatIndex(lt){ let i=0; for(let k=0;k<BEATS.length;k++) if(lt>=BEATS[k].t-1e-6) i=k; return i; }
+function drawVideo(T){
+  const k=1.030+0.022*eIO(prog(T,TL.proof.s,PROOF_LEN));
+  const w=1080*k, h=1920*k;
+  VCTX.clearRect(0,0,1080,1920);
+  try{ VCTX.drawImage(VID,(1080-w)/2,(1920-h)/2,w,h); }catch(e){}
+}
+function seekVideo(t){
+  return new Promise(res=>{
+    const v=VID;
+    let done=false;
+    const fin=()=>{ if(done) return; done=true;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>res()));
+    };
+    if(v.readyState>=2 && Math.abs(v.currentTime-t)<0.006) return fin();
+    v.addEventListener('seeked',fin,{once:true});
+    try{ v.currentTime=t; }catch(e){ fin(); }
+    setTimeout(fin,1500);
+  });
+}
+function renderProof(T){
+  const {s,e}=TL.proof;
+  const o=sceneO(T,28.02,44.08);
+  VIDL.style.opacity=o;
+  if(o<=0){ PCH.style.opacity=0; return; }
+  const lt=clamp(T-s,0,PROOF_LEN);
+  const bi=beatIndex(lt), b=BEATS[bi];
+  const bt=lt-b.t;
+  const inP=POP(T,s+b.t,.55), inO=ENTER(T,s+b.t,.28);
+  const tone=b.tone==='bad'?'#F08268':'#9BE08A';
+  const rgb=b.tone==='bad'?'228,89,63':'63,163,114';
+
+  let value, sub='';
+  if(bi===2){ value=Math.round(b.v*eOutExpo(prog(lt,b.t,1.6))).toLocaleString('en-US'); sub='copies/mL'; }
+  else if(bi===3){ const p=eOutExpo(prog(lt,b.t,1.7)); value=(546560+ (43.4-546560)*p).toFixed(1); sub='copies/mL'; }
+  else if(bi===4){ value=b.v; sub='below the limit of detection'; }
+  else { value=b.v; sub=''; }
+  const dropP = eOut(prog(lt,9.4,2.2));
+  const st=lt/PROOF_LEN;
+
+  PCH.style.opacity=o;
+  PCH.innerHTML=`
+  <div style="position:absolute;left:0;right:0;top:0;height:348px;background:linear-gradient(180deg,rgba(4,16,12,.985) 0%,rgba(4,16,12,.93) 58%,rgba(4,16,12,0) 100%)"></div>
+  <div style="position:absolute;left:74px;right:74px;top:64px;display:flex;align-items:center;justify-content:space-between">
+    <div class="brandchip"><img src="assets/mark-cream.png"><span>BASHMAN NATURAL MEDICINE</span></div>
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 22px;border-radius:999px;background:rgba(228,89,63,.16);border:1.5px solid rgba(228,89,63,.5)">
+      <span style="width:13px;height:13px;border-radius:50%;background:#E4593F;opacity:${.45+.55*Math.abs(Math.sin(T*3))}"></span>
+      <span style="font-size:20px;font-weight:800;letter-spacing:.20em;color:#F6C1B2">PATIENT PROOF</span>
+    </div>
+  </div>
+  <div style="position:absolute;left:74px;right:74px;top:150px;font-size:47px;font-weight:800;letter-spacing:-.02em;color:var(--cream);white-space:nowrap;
+       opacity:${ENTER(T,s+.25,.6)};transform:translateY(${(1-ENTER(T,s+.25,.6))*20}px)">
+    Real reports. One patient. <span style="color:var(--gold2)">Nothing edited.</span></div>
+  <div style="position:absolute;left:74px;right:74px;top:238px;display:flex;gap:13px">
+    ${BEATS.map((x,i)=>{
+      const cur=i===bi, done=i<bi;
+      const c=x.tone==='bad'?'228,89,63':'63,163,114';
+      const a=cur?1:(done?.5:.18);
+      return `<div style="flex:1">
+        <div style="height:5px;border-radius:3px;background:rgba(${c},${a});box-shadow:${cur?`0 0 18px rgba(${c},.8)`:''}"></div>
+        <div style="margin-top:10px;font-size:15px;font-weight:800;letter-spacing:.10em;color:rgba(${c},${cur?.95:(done?.5:.28)});white-space:nowrap;overflow:hidden">${x.rail}</div>
+      </div>`;}).join('')}
+  </div>
+
+  <div style="position:absolute;left:0;right:0;bottom:0;height:374px;background:linear-gradient(0deg,rgba(4,16,12,.99) 0%,rgba(4,16,12,.95) 55%,rgba(4,16,12,0) 100%)"></div>
+  <div style="position:absolute;left:74px;right:74px;bottom:96px">
+    <div class="card" style="padding:30px 34px;opacity:${inO};transform:translateY(${(1-inP)*34}px) scale(${.98+.02*inP});
+      background:linear-gradient(120deg,rgba(${rgb},.17),rgba(${rgb},.035));border-color:rgba(${rgb},.48)">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px">
+        <div style="min-width:0">
+          <div style="font-size:18px;font-weight:800;letter-spacing:.18em;color:rgba(220,239,227,.62);margin-bottom:11px">${b.lab}</div>
+          <div class="serif" style="font-size:${String(value).length>10?58:84}px;line-height:1;color:${tone};font-variant-numeric:tabular-nums;letter-spacing:-.01em">${value}</div>
+          ${sub?`<div style="margin-top:10px;font-size:21px;font-weight:700;color:rgba(220,239,227,.55)">${sub}</div>`:''}
+        </div>
+        <div style="text-align:right;flex:none">
+          ${bi>=3?`<div style="font-size:18px;font-weight:800;letter-spacing:.14em;color:rgba(220,239,227,.55);margin-bottom:8px">VIRAL LOAD DROP</div>
+          <div class="serif" style="font-size:54px;color:#9BE08A">−${(dropP*99.99).toFixed(2)}%</div>`:
+          `<div style="font-size:21px;font-weight:800;letter-spacing:.14em;color:rgba(220,239,227,.5);line-height:1.5">TREATED WITH<br>HERBS · NO DRUGS</div>`}
+        </div>
+      </div>
+      ${bi>=3?`<div style="margin-top:20px;height:11px;border-radius:6px;background:rgba(220,239,227,.12);overflow:hidden">
+        <div style="height:100%;width:${(dropP*100).toFixed(2)}%;border-radius:6px;background:linear-gradient(90deg,#E4593F,#E8C96A 45%,#3FA372)"></div></div>`:''}
+    </div>
+  </div>
+  <div style="position:absolute;left:0;right:0;bottom:0;height:7px;background:rgba(220,239,227,.10)">
+    <div style="height:100%;width:${(st*100).toFixed(2)}%;background:linear-gradient(90deg,var(--gold),var(--gold2))"></div>
+  </div>`;
+}
+
+/* ============================ 8 · QUOTES ============================ */
+const QUOTES=[
+  ['EO','Emeka O.','Hepatitis B · Lagos · 8-month program','I lived with hepatitis B for six years. After Bashman&rsquo;s program my viral load came back undetectable.'],
+  ['AB','Aisha B.','Hepatitis B · Kano · 6-month program','The jaundice cleared in five weeks. My ALT dropped from 180 to normal range by month four.'],
+  ['GM','Gabriel M.','Hepatitis B · Abuja · cleared 2024','Two negative tests, six months apart. I cried when I saw the result.'],
+];
+function scQuotes(T){
+  const {s,e}=TL.quotes; const o=sceneO(T,44.48,49.58); if(o<=0) return '';
+  const Sb=s-SB;
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;left:88px;right:88px;top:352px">
+      <div class="kicker" style="opacity:${ENTER(T,Sb+.15,.6)}"><i></i>They were positive too</div>
+      <div class="serif" style="margin-top:28px;font-size:84px;opacity:${ENTER(T,Sb+.24,.8)};transform:translateY(${(1-ENTER(T,Sb+.24,.8))*30}px)">
+        Then came the <em style="font-style:italic;color:var(--gold2)">testimony</em>.</div>
+    </div>
+    <div style="position:absolute;left:88px;right:88px;top:718px">
+      ${QUOTES.map((q,i)=>{
+        const at=Sb+.52+i*.46, p=POP(T,at,.65);
+        return `<div class="card" style="padding:36px 40px;margin-bottom:26px;opacity:${ENTER(T,at,.4)};transform:translateY(${(1-p)*44}px)">
+          <div style="display:flex;align-items:center;gap:22px;margin-bottom:20px">
+            <div style="width:74px;height:74px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+              background:linear-gradient(140deg,rgba(63,163,114,.35),rgba(30,106,75,.25));border:1.5px solid rgba(162,209,113,.42);
+              font-size:28px;font-weight:800;color:var(--mint)">${q[0]}</div>
+            <div style="flex:1">
+              <div style="font-size:35px;font-weight:800;color:var(--cream)">${q[1]}</div>
+              <div style="font-size:23px;color:rgba(220,239,227,.60);margin-top:4px">${q[2]}</div>
+            </div>${stars}
+          </div>
+          <div class="serif" style="font-size:37px;line-height:1.36;color:rgba(247,242,233,.94);font-weight:400">${q[3]}</div>
+        </div>`;}).join('')}
+    </div>
+  </div>`;
+}
+
+/* ============================ 9 · CARE ============================ */
+const CARE=[
+  ['chat','Treated on WhatsApp','Video consults, wherever you are'],
+  ['box','Remedies couriered','Sealed and delivered to your door'],
+  ['cal','Weekly check-ins','We follow up until you are free'],
+  ['lab','Your labs, reviewed','Results read together at 3 &amp; 6 months'],
+];
+const CICON={
+  chat:'<path d="M20.5 12.2c0 4.2-3.8 7.6-8.5 7.6a9.9 9.9 0 0 1-2.9-.43L4.2 21l1.3-4.1a7.2 7.2 0 0 1-2-4.7C3.5 8 7.3 4.6 12 4.6s8.5 3.4 8.5 7.6Z"/>',
+  box:'<path d="M3.6 8.3 12 4l8.4 4.3v7.4L12 20l-8.4-4.3V8.3Z"/><path d="M3.6 8.3 12 12.6l8.4-4.3M12 12.6V20"/>',
+  cal:'<rect x="3.4" y="5.2" width="17.2" height="15.4" rx="3"/><path d="M3.4 10h17.2M8.4 2.8v4.2M15.6 2.8v4.2M8 14.4h2.6M13.4 14.4H16"/>',
+  lab:'<path d="M9.4 3.2v9.1L4.6 19a2 2 0 0 0 1.7 3h11.4a2 2 0 0 0 1.7-3l-4.8-6.7V3.2"/><path d="M8 3.2h8M7.2 14.6h9.6"/>',
+};
+function scCare(T){
+  const {s,e}=TL.care; const o=sceneO(T,49.98,53.68); if(o<=0) return '';
+  const Sb=s-SB;
+    const at=Sb+.42+i*.30, p=POP(T,at,.6);
+    return `<div class="card" style="display:flex;align-items:center;gap:28px;padding:38px 34px;margin-bottom:26px;
+      opacity:${ENTER(T,at,.34)};transform:translateY(${(1-p)*40}px)">
+      <div style="width:78px;height:78px;flex:none;border-radius:22px;display:flex;align-items:center;justify-content:center;
+        background:linear-gradient(140deg,rgba(201,162,39,.24),rgba(201,162,39,.07));border:1.5px solid rgba(232,201,106,.42)">
+        <svg width="39" height="39" viewBox="0 0 24 24" fill="none" stroke="#E8C96A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${CICON[r[0]]}</svg></div>
+      <div>
+        <div style="font-size:40px;font-weight:800;color:var(--cream);letter-spacing:-.01em">${r[1]}</div>
+        <div style="font-size:27px;color:rgba(220,239,227,.72);margin-top:6px">${r[2]}</div>
+      </div>
+    </div>`;
+  };
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;left:88px;right:88px;top:486px">
+      <div class="kicker" style="opacity:${ENTER(T,Sb+.15,.6)}"><i></i>How you are treated</div>
+      <div class="serif" style="margin-top:28px;font-size:80px;margin-bottom:56px;opacity:${ENTER(T,Sb+.24,.8)};transform:translateY(${(1-ENTER(T,Sb+.24,.8))*30}px)">
+        Wherever you are,<br><em style="font-style:italic;color:var(--leaf)">you are reached</em>.</div>
+      ${CARE.map(row).join('')}
+      <div style="margin-top:14px;display:flex;align-items:center;gap:14px;opacity:${ENTER(T,Sb+1.65,.7)}">
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#A2D171" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.6l4.4 4.4L19 7.4"/></svg>
+        <span style="font-size:26px;color:rgba(220,239,227,.78);font-weight:600">100% confidential · your details are never shared</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ 10 · CTA ============================ */
+function scCTA(T){
+  const {s,e}=TL.cta; const o=sceneO(T,54.08,59.50); if(o<=0) return '';
+  const Sb=s-SB;
+  const wa='<svg width="40" height="40" viewBox="0 0 24 24" fill="#0A2A18"><path d="M12 2a9.9 9.9 0 0 0-8.5 15L2 22l5.2-1.4A9.9 9.9 0 1 0 12 2Zm0 1.9a8 8 0 1 1-4.1 14.9l-.4-.2-3 .8.8-2.9-.2-.4A8 8 0 0 1 12 3.9Zm-3.3 4c-.2 0-.5.1-.7.3-.3.3-.9.9-.9 2s.8 2.2.9 2.4c.1.2 1.6 2.6 4 3.5 2 .8 2.4.6 2.8.6.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2 0-.1-.2-.2-.4-.3l-1.5-.7c-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-1.9-1.2 7.2 7.2 0 0 1-1.3-1.7c-.1-.2 0-.3.1-.4l.5-.6c.1-.2.2-.3.1-.5l-.7-1.6c-.2-.4-.4-.4-.5-.4h-.5Z"/></svg>';
+  return `<div class="layer" style="opacity:${o}">
+    <div style="position:absolute;inset:0;background:radial-gradient(700px 700px at 50% 36%,rgba(201,162,39,.26),transparent 72%);opacity:${b}"></div>
+    <div style="position:absolute;left:88px;right:88px;top:396px;text-align:center">
+      <div style="opacity:${a};transform:scale(${.90+.10*a})">
+        <img src="assets/lockup-cream.png" style="width:470px;display:block;margin:0 auto;filter:drop-shadow(0 20px 54px rgba(0,0,0,.6))">
+      </div>
+      <div class="serif" style="margin-top:54px;font-size:104px;line-height:1.05;opacity:${b};transform:translateY(${(1-b)*34}px)">
+        Let your next test<br>result be the<br><em style="font-style:italic;color:var(--gold2)">next testimony</em>.</div>
+      <div style="margin-top:58px;opacity:${c};transform:scale(${.94+.06*c})">
+        <div style="display:inline-flex;align-items:center;gap:20px;padding:30px 54px;border-radius:999px;
+          background:linear-gradient(135deg,#3ED27A,#128C4B 78%);box-shadow:0 24px 60px -14px rgba(43,212,110,.62)">
+          ${wa}
+          <div style="text-align:left">
+            <div style="font-size:23px;font-weight:800;letter-spacing:.16em;color:rgba(10,42,24,.72)">MESSAGE BASHMAN ON WHATSAPP</div>
+            <div style="font-size:47px;font-weight:800;color:#062615;letter-spacing:-.01em;margin-top:2px">+234 806 309 1501</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:40px;display:flex;align-items:center;justify-content:center;gap:18px;opacity:${d};transform:translateY(${(1-d)*22}px)">
+        <span class="chip" style="background:rgba(232,201,106,.16);border-color:rgba(232,201,106,.5);color:#F3E4BE">Free first consultation</span>
+        <span class="chip" style="background:rgba(162,209,113,.14);border-color:rgba(162,209,113,.4)">Nationwide WhatsApp care</span>
+      </div>
+      <div style="margin-top:40px;font-size:34px;font-weight:800;letter-spacing:.06em;color:rgba(220,239,227,.86);opacity:${d}">bashmannaturalmedicine.com</div>
+      <div style="margin-top:18px;font-size:20px;color:rgba(220,239,227,.42);opacity:${d};line-height:1.5;max-width:820px;margin-left:auto;margin-right:auto">
+        Complementary wellness care. Keep your doctor informed; never stop prescribed treatment on your own.</div>
+    </div>
+  </div>`;
+}
+
+/* ============================ grain ============================ */
+document.getElementById('grain').innerHTML=`<svg width="1160" height="2000" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="1160" height="2000" filter="url(#n)"/></svg>`;
+const GRAIN=document.getElementById('grain');
+
+/* ============================ main ============================ */
+const SCENES=document.getElementById('scenes');
+const RENDERERS=[scHook,scSymptoms,scWait,scTurn,scProtocol,scProofIn,scQuotes,scCare,scCTA];
+let lastKey='';
+function paint(T){
+  renderBG(T); renderChrome(T); renderProof(T);
+  const key=Math.round(T*30);
+  if(key!==lastKey){
+    lastKey=key;
+    SCENES.innerHTML=RENDERERS.map(f=>f(T)).join('');
+    GRAIN.style.opacity=(0.045+0.012*Math.sin(T*7.3)).toFixed(4);
+  }
+}
+window.__seek=async function(T){
+  T=clamp(T,0,DURATION);
+  paint(T);
+  const {s,e}=TL.proof;
+  if(T>s-0.6 && T<e+0.6){
+    await seekVideo(clamp(T-s,0,PROOF_LEN-1/30));
+    drawVideo(T);
+  }
+  return true;
+};
+window.__ready=false;
+paint(0);
+requestAnimationFrame(()=>{paint(0);window.__ready=true;});
+</script>
+</body>
+</html>
